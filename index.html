@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>خمّن صح</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Lalezar&family=Readex+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg"></div>
+
+<!-- ==================== CINEMATIC INTRO ==================== -->
+<div class="app" id="introScreen">
+  <div class="intro">
+    <div class="intro-glow"></div>
+    <div class="intro-logo">
+      <div class="intro-line line1"></div>
+      <div class="intro-title">خمّن صح</div>
+      <div class="intro-line line2"></div>
+    </div>
+    <div class="intro-tap">اضغط للمتابعة</div>
+  </div>
+</div>
+
+<!-- ==================== AUTH SCREEN ==================== -->
+<div class="app hidden" id="authScreen">
+  <div class="auth-wrap">
+    <div class="auth-logo">خمّن صح</div>
+    <div class="auth-box" id="authLoginBox">
+      <h2 id="authTitle">تسجيل الدخول</h2>
+      <div class="auth-field">
+        <label>👤 اسم المستخدم</label>
+        <input type="text" id="authUser" placeholder="ادخل اسم المستخدم" autocomplete="username">
+      </div>
+      <div class="auth-field">
+        <label>🔒 كلمة المرور</label>
+        <input type="password" id="authPass" placeholder="ادخل كلمة المرور" autocomplete="current-password">
+      </div>
+      <div class="auth-error hidden" id="authError"></div>
+      <button class="auth-btn auth-btn-primary" id="authMainBtn" onclick="authLogin()">دخول</button>
+      <div class="auth-switch">
+        <span id="authSwitchText">ما عندك حساب؟</span>
+        <button class="auth-link" id="authSwitchBtn" onclick="authToggleMode()">إنشاء حساب جديد</button>
+      </div>
+    </div>
+    <div class="auth-user-info hidden" id="authUserInfo">
+      <div class="auth-avatar" id="authAvatar">👤</div>
+      <div class="auth-welcome" id="authWelcome">أهلاً!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GATE SCREEN (Subscribe / Trial) ==================== -->
+<div class="app hidden" id="gateScreen">
+  <div class="gate-wrap">
+    <div class="gate-logo">خمّن صح</div>
+    <div class="gate-user-bar" id="gateUserBar">👤 <span id="gateUsername">—</span></div>
+    <div class="gate-desc">لعبة جماعية تفاعلية مع الأهل والأصحاب!</div>
+    <div class="gate-cards">
+      <div class="gate-card gate-premium">
+        <div class="gate-icon">🔑</div>
+        <div class="gate-title">تفعيل الاشتراك</div>
+        <div class="gate-sub">أدخل مفتاح التفعيل للوصول الكامل</div>
+        <div class="gate-input-wrap">
+          <input type="text" id="gateKeyInput" placeholder="KS-XXXXX-XXXXX" autocomplete="off" dir="ltr">
+        </div>
+        <button class="gate-btn gate-btn-premium" onclick="gateActivate()">تفعيل 🔓</button>
+        <div class="gate-error hidden" id="gateError"></div>
+      </div>
+      <div class="gate-card gate-trial">
+        <div class="gate-icon">🎁</div>
+        <div class="gate-title">التجربة المجانية</div>
+        <div class="gate-sub">جرّب سؤال واحد مجاناً بدون تفعيل</div>
+        <div class="gate-trial-info" id="gateTrialInfo"></div>
+        <button class="gate-btn gate-btn-trial" id="gateTrialBtn" onclick="gatePlayTrial()">جرّب الآن! 🎮</button>
+      </div>
+    </div>
+    <button class="auth-link gate-logout" onclick="authLogout()">🚪 تسجيل خروج</button>
+  </div>
+</div>
+
+<!-- ==================== SETUP SCREEN ==================== -->
+<div class="app hidden" id="setupScreen">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-logo">خمّن صح</div>
+      <div class="nav-links">
+        <a href="#home" class="nav-link" onclick="scrollToSection('home')">الرئيسية</a>
+        <a href="#features" class="nav-link" onclick="scrollToSection('features')">المميزات</a>
+        <a href="#howto" class="nav-link" onclick="scrollToSection('howto')">كيف تلعب؟</a>
+        <a href="#settings" class="nav-link" onclick="scrollToSection('settings')">الإعدادات</a>
+      </div>
+      <button class="nav-play" onclick="scrollToSection('settings')">العب الآن</button>
+      <button class="nav-key-btn" id="navKeyBtn" onclick="openKeyPopup()" title="حالة الاشتراك">🔑</button>
+      <button class="nav-user-btn" id="navUserBtn" onclick="authLogout()" title="تسجيل خروج">👤</button>
+      <button class="nav-burger" id="navBurger" onclick="toggleNav()">☰</button>
+    </div>
+    <div class="nav-accent-line"></div>
+  </nav>
+
+  <!-- Mobile nav overlay -->
+  <div class="nav-mobile hidden" id="navMobile">
+    <a href="#home" class="nav-link-m" onclick="scrollToSection('home')">الرئيسية</a>
+    <a href="#features" class="nav-link-m" onclick="scrollToSection('features')">المميزات</a>
+    <a href="#howto" class="nav-link-m" onclick="scrollToSection('howto')">كيف تلعب؟</a>
+    <a href="#settings" class="nav-link-m" onclick="scrollToSection('settings')">الإعدادات</a>
+  </div>
+
+  <div class="landing-scroll" id="landingScroll">
+
+    <!-- SECTION: HERO -->
+    <section class="hero-section" id="home">
+      <div class="hero-glow"></div>
+      <div class="setup-logo">خمّن صح</div>
+      <div class="hero-tagline">لعبة جماعية تفاعلية مع الأهل والأصحاب!</div>
+      <button class="setup-go hero-cta" onclick="AudioEngine.play('click');scrollToSection('settings')">بدء اللعبة <svg class="play-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="9.5,7 17.5,12 9.5,17" fill="currentColor"/></svg></button>
+      <div class="hero-scroll-hint">⌄</div>
+    </section>
+
+    <!-- SECTION: FEATURES -->
+    <section class="land-section" id="features">
+      <h2 class="land-title">⭐ المميزات</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="fc-icon">🎤</div>
+          <div class="fc-title">نظام مقدم</div>
+          <div class="fc-desc">المقدم يتحكم بكل شيء — يكشف الإجابات ويضيف الأخطاء</div>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🎰</div>
+          <div class="fc-title">قلب البطاقات</div>
+          <div class="fc-desc">أنيميشن ثلاثي الأبعاد لما تنكشف الإجابة</div>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">✏️</div>
+          <div class="fc-title">محرر أسئلة</div>
+          <div class="fc-desc">أضف أسئلتك الخاصة وخصص اللعبة لمناسبتك</div>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🎨</div>
+          <div class="fc-title">٦ ثيمات</div>
+          <div class="fc-desc">رملي، بحري، غابة، ملكي، غروب، ليلي</div>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">📺</div>
+          <div class="fc-title">وضع TV</div>
+          <div class="fc-desc">خطوط ومربعات أكبر للعرض على شاشة كبيرة</div>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">📊</div>
+          <div class="fc-title">إحصائيات</div>
+          <div class="fc-desc">سجل نتائج + أفضل جولة + أسرع إجابة</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: HOW TO PLAY -->
+    <section class="land-section" id="howto">
+      <h2 class="land-title">🎮 كيف تلعب؟</h2>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-num">١</div><div class="step-text"><strong>جهّز اللعبة</strong> — اختر أسماء الفرق، عدد الجولات، ووقت المؤقت</div></div>
+        <div class="step-item"><div class="step-num">٢</div><div class="step-text"><strong>السؤال يظهر</strong> — المقدم يقرأ السؤال بصوت عالي والإجابات مخفية</div></div>
+        <div class="step-item"><div class="step-num">٣</div><div class="step-text"><strong>الفريق يجاوب</strong> — يقول إجابته بصوته والمقدم يضغط البطاقة لو صحيحة</div></div>
+        <div class="step-item"><div class="step-num">٤</div><div class="step-text"><strong>النقاط تتحسب تلقائي</strong> — كل إجابة صحيحة تنضاف لرصيد الفريق مباشرة</div></div>
+        <div class="step-item"><div class="step-num">٥</div><div class="step-text"><strong>٣ أخطاء = سرقة!</strong> — الدور ينتقل للفريق الثاني ولو جاوب صح ياخذ كل النقاط</div></div>
+        <div class="step-item"><div class="step-num">٦</div><div class="step-text"><strong>كل جولة = ٥ أسئلة</strong> — الفريق صاحب أعلى نقاط بالنهاية يفوز!</div></div>
+      </div>
+    </section>
+
+    <!-- SECTION: SETTINGS (game setup) -->
+    <section class="land-section settings-section" id="settings">
+      <h2 class="land-title">⚙️ إعدادات اللعبة</h2>
+
+      <div class="setup-option">
+        <label>🎮 وضع اللعبة</label>
+        <div class="option-btns" id="modeSelector">
+          <button class="opt-btn active" onclick="selectMode('group')">👥 جماعي (مقدم + فرق)</button>
+          <button class="opt-btn" onclick="selectMode('solo')">🧑 فردي (اكتب الجواب)</button>
+        </div>
+      </div>
+
+      <div id="teamInputsWrap">
+        <div class="setup-inputs">
+          <input id="inp1" placeholder="اسم الفريق الأول" maxlength="15">
+          <input id="inp2" placeholder="اسم الفريق الثاني" maxlength="15">
+        </div>
+      </div>
+
+      <div id="soloInputWrap" class="hidden">
+        <div class="setup-inputs">
+          <input id="inpSolo" placeholder="اسمك" maxlength="15">
+        </div>
+      </div>
+
+    <div class="setup-option">
+      <label>🔢 عدد الجولات (كل جولة = ٥ أسئلة)</label>
+      <div class="option-btns" id="roundsSelector">
+        <button class="opt-btn" onclick="selectRounds(1)">١</button>
+        <button class="opt-btn active" onclick="selectRounds(2)">٢</button>
+        <button class="opt-btn" onclick="selectRounds(3)">٣</button>
+        <button class="opt-btn" onclick="selectRounds(4)">٤</button>
+      </div>
+    </div>
+
+    <div class="setup-option">
+      <label>⏱️ مؤقت الجولة</label>
+      <div class="option-btns" id="timerSelector">
+        <button class="opt-btn" onclick="selectTimer(0)">بدون</button>
+        <button class="opt-btn" onclick="selectTimer(30)">٣٠ ثانية</button>
+        <button class="opt-btn active" onclick="selectTimer(60)">دقيقة</button>
+        <button class="opt-btn" onclick="selectTimer(90)">٩٠ ثانية</button>
+      </div>
+    </div>
+
+    <div class="setup-option">
+      <label>🎨 ثيم اللعبة</label>
+      <div class="theme-picker">
+        <button class="theme-dot active" onclick="selectTheme('sand')" title="رملي"><span style="background:oklch(85% .05 85)"></span></button>
+        <button class="theme-dot" onclick="selectTheme('ocean')" title="بحري"><span style="background:#1a3a5c"></span></button>
+        <button class="theme-dot" onclick="selectTheme('forest')" title="غابة"><span style="background:#1a3c2a"></span></button>
+        <button class="theme-dot" onclick="selectTheme('royal')" title="ملكي"><span style="background:#2d1b4e"></span></button>
+        <button class="theme-dot" onclick="selectTheme('sunset')" title="غروب"><span style="background:#5c2a1a"></span></button>
+        <button class="theme-dot" onclick="selectTheme('midnight')" title="ليلي"><span style="background:#111827"></span></button>
+      </div>
+    </div>
+
+    <div class="setup-option">
+      <label>📱 وضع العرض</label>
+      <div class="option-btns">
+        <button class="opt-btn active" id="tvOff" onclick="selectTV(false)">عادي</button>
+        <button class="opt-btn" id="tvOn" onclick="selectTV(true)">شاشة كبيرة TV</button>
+      </div>
+    </div>
+
+    <div class="setup-actions">
+      <button class="setup-go" onclick="initGame()">بدء اللعبة <svg class="play-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="9.5,7 17.5,12 9.5,17" fill="currentColor"/></svg></button>
+      <button class="setup-editor-btn" onclick="openEditor()">✏️ محرر الأسئلة</button>
+      <button class="setup-editor-btn" onclick="openHistory()">📝 سجل النتائج</button>
+    </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="land-footer">
+      <div class="footer-text">خمّن صح 🎮</div>
+    </footer>
+
+  </div><!-- end landing-scroll -->
+</div>
+
+<!-- ==================== QUESTION EDITOR ==================== -->
+<div class="app hidden" id="editorScreen">
+  <div class="editor">
+    <div class="editor-header">
+      <h2>✏️ محرر الأسئلة</h2>
+      <p>أضف أسئلتك الخاصة أو احذف الموجودة</p>
+    </div>
+    <div class="editor-count">عدد الأسئلة: <span id="qCount">0</span></div>
+    <div class="editor-list" id="editorList"></div>
+    <div class="editor-add">
+      <div class="ea-title">➕ إضافة سؤال جديد</div>
+      <input type="text" id="newQ" placeholder="اكتب السؤال هنا..." class="ea-input">
+      <div class="ea-answers" id="newAnswers">
+        <div class="ea-row"><input placeholder="الإجابة ١" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
+        <div class="ea-row"><input placeholder="الإجابة ٢" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
+        <div class="ea-row"><input placeholder="الإجابة ٣" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
+        <div class="ea-row"><input placeholder="الإجابة ٤" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
+        <div class="ea-row"><input placeholder="الإجابة ٥ (اختياري)" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
+        <div class="ea-row"><input placeholder="الإجابة ٦ (اختياري)" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
+      </div>
+      <button class="ctrl-btn ctrl-award" id="addQBtn" onclick="addOrUpdateQ()" style="margin-top:12px;width:100%">➕ أضف السؤال</button>
+    </div>
+    <div class="editor-footer">
+      <button class="setup-go" onclick="closeEditor()" style="font-size:1.05rem;padding:12px 40px">← رجوع</button>
+      <button class="setup-editor-btn" onclick="downloadQuestionsPDF()" style="font-size:0.85rem;padding:10px 20px">📄 تحميل PDF</button>
+      <button class="setup-editor-btn" onclick="resetToDefaults()" style="font-size:0.85rem;padding:10px 20px">🔄 استعادة الأصلية</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GAME SCREEN ==================== -->
+<div class="app hidden" id="gameScreen">
+  <!-- HEADER: Logo + Buttons -->
+  <div class="header">
+    <div class="header-logo">خمّن صح</div>
+    <div class="header-btns">
+      <div class="vol-wrap">
+        <button class="sound-toggle" id="soundBtn" onclick="toggleSound()" title="الصوت">🔊</button>
+        <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="70" oninput="setVolume(this.value)" title="مستوى الصوت">
+      </div>
+      <button class="setting-btn" onclick="openInGameSettings()" title="الإعدادات">
+        <span class="bar bar1"></span>
+        <span class="bar bar2"></span>
+        <span class="bar bar1"></span>
+      </button>
+      <button class="header-icon-btn" onclick="goHome()" title="الرئيسية">🏠</button>
+    </div>
+  </div>
+
+  <!-- SCOREBOARD with TIMER in center -->
+  <div class="scoreboard group-only" id="groupScoreboard">
+    <div class="team-card playing" id="tc1">
+      <div class="team-name" id="tn1">الفريق ١</div>
+      <div class="team-pts" id="tp1">0</div>
+    </div>
+    <div class="led-timer hidden" id="timerWrap">
+      <div class="led-display">
+        <span class="led-num" id="timerNum">60</span>
+      </div>
+      <button class="timer-ctrl-btn play" id="timerToggleBtn" onclick="toggleTimer()">▶️</button>
+    </div>
+    <div class="team-card" id="tc2">
+      <div class="team-name" id="tn2">الفريق ٢</div>
+      <div class="team-pts" id="tp2">0</div>
+    </div>
+  </div>
+  <div class="solo-score-bar solo-only hidden" id="soloScoreboard">
+    <div class="solo-name" id="soloName">اللاعب</div>
+    <div class="solo-pts" id="soloPts">0</div>
+    <div class="solo-label">نقطة</div>
+  </div>
+
+  <!-- QUESTION + ROUND BADGE BELOW -->
+  <div class="question-bar">
+    <div class="q-text" id="qText">...</div>
+    <div class="q-badge" id="roundBadge">الجولة ١ — السؤال ١ من ٥</div>
+  </div>
+
+  <!-- ANSWERS BOARD -->
+  <div class="board" id="board"></div>
+
+
+  <!-- TOOLS (directly after board) -->
+  <div class="tools-bar">
+    <button class="ctrl-btn tool-btn" onclick="useTool('hint')" title="تلميح عن الإجابة الأعلى نقاط">🎯 تلميح <span class="tool-cost">-15</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('letter')" title="يكشف أول حرف من إجابة مخفية">👀 كشف حرف <span class="tool-cost">-10</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('shield')" title="يلغي الستريك التالي">🛡️ درع <span class="tool-cost">-20</span></button>
+  </div>
+
+  <!-- SOLO INPUT -->
+  <div class="solo-input-area solo-only hidden" id="soloInputArea">
+    <input type="text" id="soloGuess" placeholder="اكتب إجابتك هنا..." autocomplete="off">
+    <button class="ctrl-btn ctrl-next" onclick="submitSoloGuess()">خمّن!</button>
+  </div>
+
+  <!-- STRIKES -->
+  <div class="strikes-display group-only" id="groupStrikes">
+    <div class="strike-x" id="sx1">✕</div>
+    <div class="strike-x" id="sx2">✕</div>
+    <div class="strike-x" id="sx3">✕</div>
+  </div>
+  <div class="strikes-display solo-only hidden" id="soloStrikes">
+    <div class="strike-x" id="ssx1">✕</div>
+    <div class="strike-x" id="ssx2">✕</div>
+    <div class="strike-x" id="ssx3">✕</div>
+  </div>
+
+  <!-- GROUP CONTROLS (team switch + actions) -->
+  <div class="controls-bar group-only" id="groupControls">
+    <div class="controls-row">
+      <button class="ctrl-btn ctrl-team active-team" id="ctrlT1" onclick="setTeam(1)"><span id="ctrlTN1">الفريق ١</span> 🎤</button>
+      <button class="ctrl-btn ctrl-strike" onclick="addStrike()">✕ خطأ</button>
+      <button class="ctrl-btn ctrl-next" onclick="goNext()">⏭️ السؤال التالي</button>
+      <button class="ctrl-btn ctrl-team" id="ctrlT2" onclick="setTeam(2)"><span id="ctrlTN2">الفريق ٢</span></button>
+    </div>
+  </div>
+
+  <!-- SOLO CONTROLS -->
+  <div class="controls-bar solo-only hidden" id="soloControls">
+    <div class="controls-row">
+      <button class="ctrl-btn ctrl-next" onclick="goNext()">⏭️ السؤال التالي</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== IN-GAME SETTINGS MODAL ==================== -->
+<div class="modal-bg" id="igSettingsModal">
+  <div class="modal-card ig-settings-card">
+    <h2>⚙️ الإعدادات</h2>
+    <div class="ig-setting">
+      <label>⏱️ وقت المؤقت</label>
+      <div class="option-btns" id="igTimerSel">
+        <button class="opt-btn" onclick="igSetTimer(0)">بدون</button>
+        <button class="opt-btn" onclick="igSetTimer(30)">٣٠ ث</button>
+        <button class="opt-btn" onclick="igSetTimer(60)">دقيقة</button>
+        <button class="opt-btn" onclick="igSetTimer(90)">٩٠ ث</button>
+      </div>
+    </div>
+    <div class="ig-setting">
+      <label>🎨 الثيم</label>
+      <div class="theme-picker">
+        <button class="theme-dot" onclick="selectTheme('sand')" title="رملي"><span style="background:oklch(85% .05 85)"></span></button>
+        <button class="theme-dot" onclick="selectTheme('ocean')" title="بحري"><span style="background:#1a3a5c"></span></button>
+        <button class="theme-dot" onclick="selectTheme('forest')" title="غابة"><span style="background:#1a3c2a"></span></button>
+        <button class="theme-dot" onclick="selectTheme('royal')" title="ملكي"><span style="background:#2d1b4e"></span></button>
+        <button class="theme-dot" onclick="selectTheme('sunset')" title="غروب"><span style="background:#5c2a1a"></span></button>
+        <button class="theme-dot" onclick="selectTheme('midnight')" title="ليلي"><span style="background:#111827"></span></button>
+      </div>
+    </div>
+    <button onclick="closeIGSettings()">حسناً ✓</button>
+  </div>
+</div>
+<div class="app hidden" id="goScreen">
+  <div class="gameover show">
+    <div class="go-trophy">🏆</div>
+    <div class="go-label">الفائز هو</div>
+    <div class="go-name" id="goName">-</div>
+    <div class="go-score" id="goScore">-</div>
+    <div class="stats-card">
+      <div class="stats-title">📊 إحصائيات اللعبة</div>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+    <button class="setup-go" onclick="restart()" style="font-size:1.1rem;padding:14px 40px;margin-top:20px">العب مرة ثانية 🔁</button>
+  </div>
+</div>
+
+<!-- ==================== HISTORY MODAL ==================== -->
+<div class="modal-bg" id="historyModal">
+  <div class="modal-card history-card">
+    <h2>📝 سجل النتائج</h2>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">ما فيه نتائج محفوظة بعد</div>
+    </div>
+    <div class="history-footer">
+      <button onclick="clearHistory()">🗑️ مسح السجل</button>
+      <button onclick="closeHistory()">حسناً ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== OVERLAYS ==================== -->
+<div class="overlay-x" id="oxOverlay"><div class="big">✕</div></div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-card">
+    <h2 id="mTitle">-</h2>
+    <div class="m-pts" id="mPts">0</div>
+    <p id="mSub">-</p>
+    <button onclick="closeModal()">حسناً ✓</button>
+  </div>
+</div>
+
+<!-- ==================== CUSTOM CONFIRM MODAL ==================== -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal-card confirm-card">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <h2 id="confirmTitle">تأكيد</h2>
+    <p id="confirmMsg">هل أنت متأكد؟</p>
+    <div class="confirm-btns">
+      <button class="ctrl-btn ctrl-strike" id="confirmYes" onclick="">نعم</button>
+      <button class="ctrl-btn" id="confirmNo" onclick="closeConfirm()">لا، رجّعني</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== KEY STATUS POPUP ==================== -->
+<div class="modal-bg" id="keyPopup">
+  <div class="modal-card key-popup-card">
+    <div class="key-status-header" id="keyStatusHeader">
+      <div class="key-icon-big">🔑</div>
+      <div class="key-status-badge" id="keyBadge">غير مفعّل</div>
+    </div>
+    <div class="key-code-display hidden" id="keyCodeDisplay">
+      <div class="key-label">مفتاح التفعيل</div>
+      <div class="key-code" id="keyCodeText">—</div>
+    </div>
+    <div class="key-input-section hidden" id="keyInputSection">
+      <input type="text" id="keyPopupInput" placeholder="KS-XXXXX-XXXXX" autocomplete="off" dir="ltr" style="text-align:center">
+      <button class="ctrl-btn ctrl-next" onclick="popupActivate()">تفعيل</button>
+      <div class="key-popup-error hidden" id="keyPopupError">❌ مفتاح غير صحيح</div>
+    </div>
+    <div class="key-actions">
+      <button class="ctrl-btn" id="keyActionBtn" onclick="toggleKeyInput()">إدخال مفتاح جديد</button>
+      <button class="ctrl-btn" onclick="closeKeyPopup()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
