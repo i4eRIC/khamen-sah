@@ -1,6 +1,5 @@
 // ========= API CONFIG =========
-const API_URL = 'http://localhost:3000/api';
-
+const API_URL = 'https://khamen-sah.onrender.com/api';
 // ========= USER ACCOUNTS & LICENSE SYSTEM =========
 const LICENSE = {
   currentKey: 'khamen_current_user',
