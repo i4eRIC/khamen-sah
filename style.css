@@ -1043,25 +1043,6 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   100% { opacity:1; filter:blur(0) drop-shadow(0 6px 20px var(--accent-glow)); transform:scale(1) translateY(0) }
 }
 
-.intro-sub {
-  font-size:1.4rem; color:var(--gold-dark); letter-spacing:10px;
-  opacity:0; animation:introFade 0.8s 1.4s ease forwards;
-}
-.intro-stars {
-  display:flex; gap:8px; margin-top:12px;
-  opacity:0; animation:introFade 0.6s 1.8s ease forwards;
-}
-.intro-stars span {
-  font-size:1.5rem; display:inline-block;
-  animation:starPop 0.3s ease backwards;
-}
-.intro-stars span:nth-child(1) { animation-delay:1.9s }
-.intro-stars span:nth-child(2) { animation-delay:2.05s }
-.intro-stars span:nth-child(3) { animation-delay:2.2s }
-.intro-stars span:nth-child(4) { animation-delay:2.35s }
-.intro-stars span:nth-child(5) { animation-delay:2.5s }
-@keyframes starPop { from { transform:scale(0) rotate(-30deg); opacity:0 } }
-
 .intro-tap {
   margin-top:40px; font-size:0.95rem; color:var(--text-soft);
   opacity:0; animation:introFade 0.5s 2.8s ease forwards;

@@ -292,7 +292,6 @@ async function popupActivate(){
     errorDisplay.classList.remove('hidden');
   }
 }
-function validateLicense(){popupActivate()}
 function updateNavKey(){
   const btn=$('navKeyBtn');
   if(btn){if(isLicensed()){btn.classList.add('active');btn.title='الاشتراك مفعّل'}else{btn.classList.remove('active');btn.title='حالة الاشتراك'}}
@@ -1078,7 +1077,6 @@ function dismissIntro(){
 }
 $('introScreen').addEventListener('click',dismissIntro);
 
-function updateLicenseStatus(){ updateNavKey() }
 function scrollToSection(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'});$('navMobile').classList.add('hidden')}
 function toggleNav(){$('navMobile').classList.toggle('hidden')}
 
