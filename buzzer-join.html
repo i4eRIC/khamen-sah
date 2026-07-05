@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>انضمام للبازر — خمّن صح</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  html,body{background:var(--bg);height:100%;overflow:hidden}
+  .bz-page{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+
+  /* ---- top bar (visible on both screens) ---- */
+  .bz-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;flex-shrink:0}
+  .bz-leave{display:flex;align-items:center;gap:5px;background:var(--bg-card2);border:2px solid var(--border);border-radius:10px;padding:6px 12px;font-family:'AA Galaxy','Tajawal',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text-mid);cursor:pointer;box-shadow:2px 2px 0px color-mix(in srgb, var(--border) 80%, #000)}
+  .bz-leave:active{box-shadow:none;transform:translateY(2px)}
+  .bz-leave svg{width:16px;height:16px;flex-shrink:0}
+  .bz-room-chip{font-size:0.78rem;font-weight:800;color:var(--text-soft);background:var(--bg-card2);border:1.5px solid var(--border-light);border-radius:10px;padding:5px 12px;direction:ltr}
+  .bz-room-chip.hidden, .bz-leave.hidden{visibility:hidden}
+
+  /* ---- join form screen ---- */
+  .bz-wrap{flex:1;max-width:420px;width:100%;margin:0 auto;padding:10px 20px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .bz-logo{font-family:'AA Galaxy','Lalezar',cursive;font-size:2.4rem;color:var(--accent);margin-bottom:4px}
+  .bz-tagline{color:var(--text-soft);font-size:0.9rem;margin-bottom:22px}
+  .bz-card{width:100%;background:color-mix(in srgb, var(--bg-card) 65%, transparent);backdrop-filter:blur(14px);border:1.5px solid var(--border-light);border-radius:20px;padding:26px 22px;box-shadow:var(--shadow)}
+  .bz-field{text-align:right;margin-bottom:14px}
+  .bz-field label{display:block;font-size:0.82rem;font-weight:700;color:var(--text-soft);margin-bottom:6px}
+  .bz-card input{width:100%;padding:13px 16px;font-size:1.1rem;border:2px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-family:'AA Galaxy','Tajawal',sans-serif;text-align:center;transition:border-color .2s}
+  .bz-card input:focus{outline:none;border-color:var(--gold)}
+  .bz-card input#codeInput{direction:ltr;letter-spacing:6px;font-family:monospace;font-size:1.3rem}
+  .bz-btn{width:100%;padding:14px;border:2px solid #b07820;border-radius:12px;background:#f0a830;color:#fff;font-family:'AA Galaxy','Tajawal',sans-serif;font-size:1.1rem;font-weight:800;cursor:pointer;box-shadow:4px 4px 0px #8a5e18;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .bz-btn:active{box-shadow:none;transform:translateY(4px)}
+  .bz-error{color:var(--danger);font-size:0.85rem;margin-top:10px;font-weight:700}
+
+  /* ---- buzzer screen ---- */
+  .buzz-screen{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:10px 20px 30px;gap:clamp(10px,3vh,22px)}
+  .buzz-team-card{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .buzz-conn-dot{display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:700;color:var(--text-soft);background:var(--bg-card2);border-radius:20px;padding:4px 12px}
+  .buzz-conn-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .buzz-team-name{font-family:'AA Galaxy','Lalezar',cursive;font-size:clamp(1.4rem,6vw,2rem);color:var(--text)}
+
+  .buzz-button{
+    width:clamp(150px,42vmin,240px);height:clamp(150px,42vmin,240px);border-radius:50%;border:6px solid #8a1f1f;
+    background:radial-gradient(circle at 35% 30%, #ff6b6b, #c0392b);
+    color:#fff;font-family:'AA Galaxy','Lalezar',cursive;font-size:clamp(1.2rem,6vmin,1.7rem);font-weight:900;
+    box-shadow:0 10px 0 #7a1515, 0 14px 24px rgba(0,0,0,0.3);
+    cursor:pointer; transition:transform .1s; flex-shrink:0;
+  }
+  .buzz-button:active{transform:translateY(8px);box-shadow:0 2px 0 #7a1515, 0 4px 10px rgba(0,0,0,0.3)}
+  .buzz-button.locked{background:#9ca3af;border-color:#6b7280;box-shadow:0 10px 0 #4b5563;cursor:not-allowed;filter:grayscale(0.6)}
+  .buzz-button.pulse{animation:buzzPulse 1s ease-in-out infinite}
+  @keyframes buzzPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+  .buzz-status-card{width:100%;max-width:360px;text-align:center;background:color-mix(in srgb, var(--bg-card) 55%, transparent);backdrop-filter:blur(10px);border:1.5px solid var(--border-light);border-radius:16px;padding:14px 18px}
+  .buzz-status{font-size:1rem;font-weight:700;color:var(--text-soft);min-height:26px}
+  .buzz-status.win{color:var(--green);font-weight:900;font-size:1.25rem}
+  .buzz-status.lose{color:var(--danger);font-weight:800}
+  .buzz-hint{font-size:0.75rem;color:var(--text-soft);margin-top:4px;opacity:.8}
+
+  @media(max-height:600px){
+    .buzz-screen{gap:10px;padding:6px 20px 14px}
+    .buzz-team-name{font-size:1.2rem}
+  }
+</style>
+</head>
+<body data-theme="sand">
+
+<div class="bz-page">
+  <div class="bz-topbar">
+    <button class="bz-leave hidden" id="leaveBtn" onclick="leaveRoom()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6a1.2 1.2 0 0 0-1.2 1.2v13.6A1.2 1.2 0 0 0 6 20h4"/><path d="M20 12H9.5M16.5 8.5 20 12l-3.5 3.5"/></svg>
+      مغادرة
+    </button>
+    <div class="bz-room-chip hidden" id="roomChip">—</div>
+  </div>
+
+  <div class="bz-wrap" id="joinScreen">
+    <div class="bz-logo">خمّن صح</div>
+    <div class="bz-tagline">🧪 انضمام لنظام البازر (تجريبي)</div>
+    <div class="bz-card">
+      <div class="bz-field">
+        <label>كود الغرفة</label>
+        <input type="text" id="codeInput" placeholder="00000" maxlength="5" inputmode="numeric">
+      </div>
+      <div class="bz-field">
+        <label>اسم فريقكم</label>
+        <input type="text" id="nameInput" placeholder="مثلاً: النمور" maxlength="20">
+      </div>
+      <button class="bz-btn" onclick="joinRoom()">🚀 انضمام</button>
+      <div class="bz-error" id="joinError" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="buzz-screen" id="buzzScreen">
+    <div class="buzz-team-card">
+      <div class="buzz-conn-dot">متصلين بالغرفة</div>
+      <div class="buzz-team-name" id="teamNameDisplay"></div>
+    </div>
+    <button class="buzz-button locked" id="buzzBtn" onclick="pressBuzz()">اضغط!</button>
+    <div class="buzz-status-card">
+      <div class="buzz-status" id="buzzStatus">بانتظار المضيف يفتح الأزرار...</div>
+      <div class="buzz-hint">خلّوا الجوال بإيدكم جاهز — بيفتح تلقائي أول ما يبدأ السؤال</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://jydohcccucwwnxgbdyqu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5ZG9oY2NjdWN3d254Z2JkeXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDU4MTEsImV4cCI6MjA4OTkyMTgxMX0.hgrBBF4wRtQEWGpwngOm5lN5A_fqIRisLXQxwEzLyDQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let channel = null;
+let teamName = '';
+let unlocked = false;
+let hasBuzzedThisRound = false;
+
+const params = new URLSearchParams(location.search);
+if (params.get('code')) document.getElementById('codeInput').value = params.get('code');
+
+function joinRoom(){
+  const code = document.getElementById('codeInput').value.trim();
+  const name = document.getElementById('nameInput').value.trim();
+  const errEl = document.getElementById('joinError');
+  if (!/^\d{5}$/.test(code)) { errEl.textContent = 'أدخل كود الغرفة المكوّن من 5 أرقام'; errEl.style.display='block'; return; }
+  if (!name) { errEl.textContent = 'أدخل اسم فريقكم'; errEl.style.display='block'; return; }
+  errEl.style.display = 'none';
+  teamName = name;
+  hasBuzzedThisRound = false;
+  unlocked = false;
+
+  channel = sb.channel('room-' + code, { config: { presence: { key: 'team-' + Math.random().toString(36).slice(2,8) } } });
+
+  channel.on('broadcast', { event: 'unlock' }, () => {
+    unlocked = true;
+    hasBuzzedThisRound = false;
+    const btn = document.getElementById('buzzBtn');
+    btn.classList.remove('locked'); btn.classList.add('pulse');
+    document.getElementById('buzzStatus').className = 'buzz-status';
+    document.getElementById('buzzStatus').textContent = 'الحين! اضغط بسرعة!';
+  });
+
+  channel.on('broadcast', { event: 'lock' }, () => {
+    unlocked = false;
+    const btn = document.getElementById('buzzBtn');
+    btn.classList.add('locked'); btn.classList.remove('pulse');
+    document.getElementById('buzzStatus').className = 'buzz-status';
+    document.getElementById('buzzStatus').textContent = 'بانتظار السؤال الجاي...';
+  });
+
+  channel.on('broadcast', { event: 'winner' }, (payload) => {
+    unlocked = false;
+    const btn = document.getElementById('buzzBtn');
+    btn.classList.add('locked'); btn.classList.remove('pulse');
+    const winnerName = payload.payload.team_name;
+    const statusEl = document.getElementById('buzzStatus');
+    if (winnerName === teamName) {
+      statusEl.className = 'buzz-status win';
+      statusEl.textContent = '🎉 سبقتوا! ردّوا على السؤال';
+    } else {
+      statusEl.className = 'buzz-status lose';
+      statusEl.textContent = winnerName + ' سبقوكم';
+    }
+  });
+
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      channel.track({ team_name: teamName });
+      document.getElementById('joinScreen').style.display = 'none';
+      document.getElementById('buzzScreen').style.display = 'flex';
+      document.getElementById('teamNameDisplay').textContent = teamName;
+      document.getElementById('roomChip').textContent = code;
+      document.getElementById('roomChip').classList.remove('hidden');
+      document.getElementById('leaveBtn').classList.remove('hidden');
+    }
+  });
+}
+
+function pressBuzz(){
+  if (!unlocked || hasBuzzedThisRound) return;
+  hasBuzzedThisRound = true;
+  document.getElementById('buzzBtn').classList.add('locked');
+  document.getElementById('buzzBtn').classList.remove('pulse');
+  document.getElementById('buzzStatus').textContent = 'تم الإرسال...';
+  channel.send({ type: 'broadcast', event: 'buzz', payload: { team_name: teamName } });
+}
+
+function leaveRoom(){
+  if (channel) { sb.removeChannel(channel); channel = null; }
+  unlocked = false;
+  hasBuzzedThisRound = false;
+  document.getElementById('buzzBtn').classList.add('locked');
+  document.getElementById('buzzBtn').classList.remove('pulse');
+  document.getElementById('leaveBtn').classList.add('hidden');
+  document.getElementById('roomChip').classList.add('hidden');
+  document.getElementById('buzzScreen').style.display = 'none';
+  document.getElementById('joinScreen').style.display = 'flex';
+  document.getElementById('codeInput').value = '';
+  document.getElementById('codeInput').focus();
+}
+</script>
+</body>
+</html>

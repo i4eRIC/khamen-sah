@@ -1,5 +1,18 @@
 // ========= API CONFIG =========
 const API_URL = 'https://khamen-sah.onrender.com/api';
+
+// ========= ICON HELPER =========
+const EMOJI_ICON_MAP = {'🚪':'door','🔑':'key','🔄':'refresh','🗑️':'trash','🏠':'home','⚠️':'warning','🛡️':'shield'};
+function iconSVG(name){ return '<svg class="icon"><use href="#i-'+name+'"></use></svg>'; }
+function iconEl(name){
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('class','icon');
+  const use=document.createElementNS('http://www.w3.org/2000/svg','use');
+  use.setAttribute('href','#i-'+name);
+  svg.appendChild(use);
+  return svg;
+}
+
 // ========= USER ACCOUNTS & LICENSE SYSTEM =========
 const LICENSE = {
   currentKey: 'khamen_current_user',
@@ -242,17 +255,17 @@ function openKeyPopup(){
   $('keyPopupError').classList.add('hidden');
   if(isLicensed()){
     const u=getCurrentUser();
-    badge.textContent='✅ مفعّل';
+    badge.innerHTML=iconSVG('check')+' مفعّل';
     badge.className='key-status-badge active';
     codeDisplay.classList.remove('hidden');
     codeText.textContent=u?u.license_key:'—';
-    actionBtn.textContent='🗑️ إلغاء التفعيل';
+    actionBtn.innerHTML=iconSVG('trash')+' إلغاء التفعيل';
     actionBtn.onclick=function(){gameConfirm('متأكد تبي تلغي التفعيل؟',function(){removeLicense();closeKeyPopup();updateNavKey()},'🔑')};
   } else {
-    badge.textContent='❌ غير مفعّل';
+    badge.innerHTML=iconSVG('warning')+' غير مفعّل';
     badge.className='key-status-badge inactive';
     codeDisplay.classList.add('hidden');
-    actionBtn.textContent='🔑 إدخال مفتاح';
+    actionBtn.innerHTML=iconSVG('key')+' إدخال مفتاح';
     actionBtn.onclick=function(){toggleKeyInput()};
   }
   $('keyPopup').classList.add('show');
@@ -288,7 +301,9 @@ function updateNavUser(){
   const btn=$('navUserBtn');
   if(btn){
     const name=getCurrentUsername();
-    btn.textContent='👤 '+name;
+    btn.innerHTML='';
+    btn.appendChild(iconEl('user'));
+    btn.appendChild(document.createTextNode(' '+name));
     btn.title='تسجيل خروج — '+name;
   }
 }
@@ -581,53 +596,245 @@ try {
 nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
 
 const Q_PER_ROUND = 5;
-let SETTINGS = { rounds: 2, timer: 60, theme: 'sand', tvMode: false, soundOn: true, volume: 0.7, mode: 'group' };
+let SETTINGS = { rounds: 2, timer: 60, theme: 'sand', tvMode: false, soundOn: true, volume: 0.7, mode: 'group', buzzerMode: false };
+
+// ========= BUZZER / ROOMS (experimental) =========
+const BUZZER_SUPABASE_URL = 'https://jydohcccucwwnxgbdyqu.supabase.co';
+const BUZZER_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5ZG9oY2NjdWN3d254Z2JkeXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDU4MTEsImV4cCI6MjA4OTkyMTgxMX0.hgrBBF4wRtQEWGpwngOm5lN5A_fqIRisLXQxwEzLyDQ';
+let BUZZER = { sb:null, channel:null, roomCode:null, slotNames:{1:null,2:null}, connectedNames:[], unlocked:false, winnerDeclared:false };
+
+function getBuzzerClient(){
+  if (!BUZZER.sb) BUZZER.sb = supabase.createClient(BUZZER_SUPABASE_URL, BUZZER_SUPABASE_ANON_KEY);
+  return BUZZER.sb;
+}
+
+function selectBuzzerMode(on){
+  SETTINGS.buzzerMode = on;
+  document.querySelectorAll('#buzzerModeSelector .opt-btn').forEach(b=>b.classList.remove('active'));
+  event.target.closest('.opt-btn').classList.add('active');
+  $('teamInputsWrap').classList.toggle('hidden', on);
+  $('buzzerRoomWrap').classList.toggle('hidden', !on);
+  AudioEngine.play('click');
+}
+
+function genRoomCode(){ return String(Math.floor(10000 + Math.random()*90000)); }
+
+function createBuzzerRoom(){
+  if (BUZZER.channel) return; // already created
+  const code = genRoomCode();
+  BUZZER.roomCode = code;
+  BUZZER.slotNames = {1:null, 2:null};
+
+  $('buzzerCodeDisplay').textContent = code;
+  $('buzzerJoinUrl').textContent = location.origin + '/buzzer-join.html?code=' + code;
+  $('createRoomBtn').classList.add('hidden');
+  $('buzzerRoomInfo').classList.remove('hidden');
+
+  const sb = getBuzzerClient();
+  const channel = sb.channel('room-' + code, { config: { presence: { key: 'host' } } });
+
+  channel.on('presence', { event: 'sync' }, () => {
+    const state = channel.presenceState();
+    const joinedNames = [];
+    Object.keys(state).forEach(key => {
+      if (key === 'host') return;
+      const meta = state[key][0];
+      if (meta && meta.team_name) joinedNames.push(meta.team_name);
+    });
+    // Slot assignment is permanent once claimed by a name, for the life of this room —
+    // a phone that reconnects (locked screen, dropped wifi, browser backgrounded, etc.)
+    // must land back in the SAME slot rather than being re-numbered by connection order,
+    // which could otherwise flip which team is "1" vs "2" mid-game. Presence is only used
+    // to know who's currently connected (for the UI dot), never to free up a claimed slot.
+    joinedNames.forEach(name => {
+      if (BUZZER.slotNames[1] === name || BUZZER.slotNames[2] === name) return;
+      if (!BUZZER.slotNames[1]) BUZZER.slotNames[1] = name;
+      else if (!BUZZER.slotNames[2]) BUZZER.slotNames[2] = name;
+    });
+    BUZZER.connectedNames = joinedNames;
+    updateBuzzerSlotUI();
+  });
+
+  channel.on('broadcast', { event: 'buzz' }, (payload) => {
+    if (!BUZZER.unlocked || BUZZER.winnerDeclared) return;
+    const teamName = payload.payload.team_name;
+    const slotNum = BUZZER.slotNames[1] === teamName ? 1 : (BUZZER.slotNames[2] === teamName ? 2 : null);
+    if (!slotNum) return;
+    BUZZER.winnerDeclared = true;
+    BUZZER.unlocked = false;
+    setTeam(slotNum);
+    showBuzzWinner(teamName);
+    channel.send({ type:'broadcast', event:'winner', payload:{ team_name: teamName } });
+  });
+
+  channel.subscribe((status) => { if (status === 'SUBSCRIBED') channel.track({ role:'host' }); });
+  BUZZER.channel = channel;
+}
+
+function updateBuzzerSlotUI(){
+  for (let i=1;i<=2;i++){
+    const el = $('buzzerSlot'+i); const st = $('bs'+i+'status');
+    if (!el || !st) continue;
+    const name = BUZZER.slotNames[i];
+    const isConnected = name && BUZZER.connectedNames.includes(name);
+    el.classList.toggle('joined', !!isConnected);
+    if (!name) st.textContent = '⏳ بانتظار الانضمام';
+    else st.textContent = (isConnected ? '✓ ' : '⚠ غير متصل — ') + name;
+  }
+}
+
+function unlockGameBuzzer(){
+  if (!BUZZER.channel) return;
+  BUZZER.unlocked = true;
+  BUZZER.winnerDeclared = false;
+  $('buzzOverlay').classList.remove('show');
+  $('buzzerUnlockBtn').disabled = true;
+  BUZZER.channel.send({ type:'broadcast', event:'unlock', payload:{} });
+  AudioEngine.play('click');
+}
+
+function lockGameBuzzer(){
+  if (!BUZZER.channel) return;
+  BUZZER.unlocked = false;
+  if ($('buzzerUnlockBtn')) $('buzzerUnlockBtn').disabled = false;
+  BUZZER.channel.send({ type:'broadcast', event:'lock', payload:{} });
+}
+
+function showBuzzWinner(teamName){
+  AudioEngine.play('switch', {pan:0});
+  $('buzzWinnerText').textContent = teamName + ' ضغط الزر أول!';
+  $('buzzOverlay').classList.add('show');
+  // stays up on purpose — hidden only when control passes to the other team (addStrike)
+  // or a new question loads (loadQuestion), not on a timer
+  if ($('buzzerUnlockBtn')) $('buzzerUnlockBtn').disabled = true;
+}
+
+function hideBuzzBanner(){
+  $('buzzOverlay').classList.remove('show');
+}
 
 let G = { t1:{name:'',score:0}, t2:{name:'',score:0}, playing:1, round:0, qIndex:0, qInRound:0, strikes:0, roundPts:{1:0,2:0}, revealed:new Set(), questions:[], timerInterval:null, timerLeft:0, timerRunning:false, soloScore:0, soloStrikes:0, stealMode:false, stealPts:0, stealFrom:'', shieldActive:false, toolsUsed:{letter:false,hint:false,shield:false}, stats:{roundScores:[],totalReveals:0,totalStrikes:0,bestRound:{team:'',pts:0},fastestReveal:null,roundStartTime:0} };
 const $=id=>document.getElementById(id);
 const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 
 // ========= AUDIO ENGINE =========
-const AudioEngine={ctx:null,getCtx(){if(!this.ctx)this.ctx=new(window.AudioContext||window.webkitAudioContext)();return this.ctx},
+const AudioEngine={
+ctx:null,
+getCtx(){if(!this.ctx)this.ctx=new(window.AudioContext||window.webkitAudioContext)();return this.ctx},
 masterVol(){const c=this.getCtx();const g=c.createGain();g.gain.value=SETTINGS.volume;g.connect(c.destination);return g},
-play(type){if(!SETTINGS.soundOn)return;try{const c=this.getCtx();const dest=this.masterVol();
-if(type==='reveal'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.setValueAtTime(600,c.currentTime);o.frequency.exponentialRampToValueAtTime(1200,c.currentTime+0.1);g.gain.setValueAtTime(0.3,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.3);o.start();o.stop(c.currentTime+0.3)}
-else if(type==='strike'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.setValueAtTime(480,c.currentTime);o.frequency.exponentialRampToValueAtTime(250,c.currentTime+0.3);g.gain.setValueAtTime(0.18,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.35);o.start();o.stop(c.currentTime+0.35)}
-else if(type==='applause'){for(let i=0;i<20;i++){const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();o.connect(f);f.connect(g);g.connect(dest);o.type='sawtooth';o.frequency.value=200+Math.random()*3000;f.type='bandpass';f.frequency.value=1000+Math.random()*2000;f.Q.value=0.5;const s=c.currentTime+Math.random()*0.5;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(0.015,s+0.02);g.gain.exponentialRampToValueAtTime(0.001,s+0.08);o.start(s);o.stop(s+0.1)}}
-else if(type==='win'){[523,659,784,1047].forEach((freq,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.value=freq;const t=c.currentTime+i*0.15;g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.4);o.start(t);o.stop(t+0.4)})}
-else if(type==='tick'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.value=1000;g.gain.setValueAtTime(0.08,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.05);o.start();o.stop(c.currentTime+0.05)}
-else if(type==='timeup'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='square';o.frequency.value=400;g.gain.setValueAtTime(0.3,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.8);o.start();o.stop(c.currentTime+0.8)}
-// UI button sounds
-else if(type==='click'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.setValueAtTime(800,c.currentTime);o.frequency.exponentialRampToValueAtTime(600,c.currentTime+0.06);g.gain.setValueAtTime(0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.08);o.start();o.stop(c.currentTime+0.08)}
-else if(type==='pop'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.setValueAtTime(400,c.currentTime);o.frequency.exponentialRampToValueAtTime(900,c.currentTime+0.08);g.gain.setValueAtTime(0.2,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.12);o.start();o.stop(c.currentTime+0.12)}
-else if(type==='swoosh'){const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();o.connect(f);f.connect(g);g.connect(dest);o.type='sawtooth';f.type='bandpass';f.frequency.setValueAtTime(300,c.currentTime);f.frequency.exponentialRampToValueAtTime(2000,c.currentTime+0.15);f.Q.value=2;o.frequency.value=200;g.gain.setValueAtTime(0.1,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.2);o.start();o.stop(c.currentTime+0.2)}
-else if(type==='coin'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.setValueAtTime(1400,c.currentTime);o.frequency.setValueAtTime(1800,c.currentTime+0.07);g.gain.setValueAtTime(0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.2);o.start();o.stop(c.currentTime+0.2)}
-else if(type==='switch'){[500,700].forEach((freq,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='triangle';o.frequency.value=freq;const t=c.currentTime+i*0.08;g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.12);o.start(t);o.stop(t+0.12)})}
-else if(type==='open'){[300,500,700].forEach((freq,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.value=freq;const t=c.currentTime+i*0.06;g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.start(t);o.stop(t+0.15)})}
-else if(type==='close'){[700,500,300].forEach((freq,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.value=freq;const t=c.currentTime+i*0.06;g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.start(t);o.stop(t+0.15)})}
-else if(type==='error'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='square';o.frequency.setValueAtTime(250,c.currentTime);o.frequency.exponentialRampToValueAtTime(150,c.currentTime+0.15);g.gain.setValueAtTime(0.12,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.2);o.start();o.stop(c.currentTime+0.2)}
-else if(type==='start'){[523,659,784,1047,1318].forEach((freq,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(dest);o.type='sine';o.frequency.value=freq;const t=c.currentTime+i*0.1;g.gain.setValueAtTime(0.15,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.2);o.start(t);o.stop(t+0.25)})}
-}catch(e){}}};
+// pitched tone with an optional quiet octave-up harmonic layer for warmth, and optional stereo pan
+tone(dest,freq,{type='sine',dur=0.2,gain=0.2,glideTo=null,delay=0,harmonic=0,pan=null}={}){
+  const c=this.getCtx();const t=c.currentTime+delay;
+  let out=dest;
+  if(pan!==null){const p=c.createStereoPanner();p.pan.value=pan;p.connect(dest);out=p}
+  const o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,t);
+  if(glideTo)o.frequency.exponentialRampToValueAtTime(glideTo,t+dur*0.6);
+  g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(g);g.connect(out);o.start(t);o.stop(t+dur);
+  if(harmonic>0){
+    const o2=c.createOscillator(),g2=c.createGain();
+    o2.type='triangle';o2.frequency.setValueAtTime(freq*2,t);
+    if(glideTo)o2.frequency.exponentialRampToValueAtTime(glideTo*2,t+dur*0.6);
+    g2.gain.setValueAtTime(gain*harmonic,t);g2.gain.exponentialRampToValueAtTime(0.001,t+dur*0.7);
+    o2.connect(g2);g2.connect(out);o2.start(t);o2.stop(t+dur*0.7);
+  }
+},
+// filtered noise burst — used for tactile UI clicks/thuds instead of thin sine beeps
+noise(dest,{dur=0.08,type='highpass',freq=1500,Q=0.7,gain=0.25,decay=0.06,delay=0,pan=null}={}){
+  const c=this.getCtx();const t=c.currentTime+delay;
+  let out=dest;
+  if(pan!==null){const p=c.createStereoPanner();p.pan.value=pan;p.connect(dest);out=p}
+  const n=Math.max(1,Math.floor(c.sampleRate*dur));
+  const buf=c.createBuffer(1,n,c.sampleRate);const d=buf.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  const src=c.createBufferSource();src.buffer=buf;
+  const f=c.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=Q;
+  const g=c.createGain();g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(0.001,t+decay);
+  src.connect(f);f.connect(g);g.connect(out);src.start(t);src.stop(t+dur);
+},
+play(type,opts){
+  if(!SETTINGS.soundOn)return;
+  opts=opts||{};
+  try{
+    const dest=this.masterVol();
+    if(type==='reveal'){this.tone(dest,620,{dur:0.26,gain:0.24,glideTo:1250,harmonic:0.25});this.noise(dest,{dur:0.035,type:'bandpass',freq:2400,Q:1.4,gain:0.05,decay:0.03})}
+    else if(type==='strike'){this.tone(dest,460,{dur:0.3,gain:0.16,glideTo:200});this.noise(dest,{dur:0.1,type:'lowpass',freq:450,Q:0.7,gain:0.16,decay:0.1})}
+    else if(type==='applause'){for(let i=0;i<28;i++){this.noise(dest,{dur:0.09,type:'bandpass',freq:900+Math.random()*2400,Q:0.5,gain:0.018,decay:0.09,delay:Math.random()*0.55,pan:Math.random()*2-1})}}
+    else if(type==='win'){[523,659,784,1047].forEach((freq,i)=>this.tone(dest,freq,{dur:0.4,gain:0.18,delay:i*0.15,harmonic:0.3}))}
+    else if(type==='tick'){this.tone(dest,1050,{dur:0.05,gain:0.1,harmonic:0.15});this.noise(dest,{dur:0.02,type:'highpass',freq:4000,gain:0.04,decay:0.02})}
+    else if(type==='timeup'){this.tone(dest,400,{type:'square',dur:0.75,gain:0.2});this.tone(dest,196,{type:'square',dur:0.75,gain:0.12,delay:0.04})}
+    // UI button sounds
+    else if(type==='click'){this.noise(dest,{dur:0.035,type:'highpass',freq:2600,Q:0.9,gain:0.12,decay:0.03});this.tone(dest,720,{dur:0.05,gain:0.06})}
+    else if(type==='pop'){this.tone(dest,420,{dur:0.1,gain:0.16,glideTo:900,harmonic:0.2});this.noise(dest,{dur:0.03,type:'bandpass',freq:2000,Q:1,gain:0.05,decay:0.03})}
+    else if(type==='swoosh'){this.noise(dest,{dur:0.2,type:'bandpass',freq:1200,Q:1.6,gain:0.1,decay:0.18})}
+    else if(type==='coin'){this.tone(dest,1300,{dur:0.09,gain:0.14,harmonic:0.3});this.tone(dest,1700,{dur:0.16,gain:0.13,delay:0.07,harmonic:0.3})}
+    else if(type==='switch'){const pan=opts.pan!=null?opts.pan:0;this.tone(dest,520,{dur:0.12,gain:0.13,pan,harmonic:0.2});this.tone(dest,700,{dur:0.13,gain:0.11,delay:0.08,pan,harmonic:0.2})}
+    else if(type==='open'){[320,480,640].forEach((f,i)=>this.tone(dest,f,{dur:0.14,gain:0.09,delay:i*0.055,harmonic:0.2}))}
+    else if(type==='close'){[640,480,320].forEach((f,i)=>this.tone(dest,f,{dur:0.14,gain:0.09,delay:i*0.055,harmonic:0.2}))}
+    else if(type==='error'){this.tone(dest,240,{type:'square',dur:0.18,gain:0.1,glideTo:140});this.noise(dest,{dur:0.06,type:'lowpass',freq:600,gain:0.08,decay:0.06})}
+    else if(type==='start'){[523,659,784,1047,1318].forEach((f,i)=>this.tone(dest,f,{dur:0.22,gain:0.15,delay:i*0.1,harmonic:0.3}))}
+  }catch(e){}
+}};
 
 // ========= SETUP =========
 function selectRounds(n){SETTINGS.rounds=n;document.querySelectorAll('#roundsSelector .opt-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');AudioEngine.play('click')}
 function selectTimer(s){SETTINGS.timer=s;document.querySelectorAll('#timerSelector .opt-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');AudioEngine.play('click')}
 function selectTheme(t){SETTINGS.theme=t;document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-dot').forEach(b=>b.classList.remove('active'));event.currentTarget.classList.add('active');AudioEngine.play('pop')}
 function selectTV(on){SETTINGS.tvMode=on;$('tvOff').classList.toggle('active',!on);$('tvOn').classList.toggle('active',on);document.body.classList.toggle('tv-mode',on);AudioEngine.play('click')}
-function selectMode(m){SETTINGS.mode=m;document.querySelectorAll('#modeSelector .opt-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');$('teamInputsWrap').classList.toggle('hidden',m==='solo');$('soloInputWrap').classList.toggle('hidden',m==='group');AudioEngine.play('swoosh')}
-function toggleSound(){SETTINGS.soundOn=!SETTINGS.soundOn;$('soundBtn').classList.toggle('muted',!SETTINGS.soundOn);$('soundBtn').textContent=SETTINGS.soundOn?'🔊':'🔇';if(SETTINGS.soundOn)AudioEngine.play('pop')}
-function setVolume(v){SETTINGS.volume=v/100;if(v==0){SETTINGS.soundOn=false;$('soundBtn').classList.add('muted');$('soundBtn').textContent='🔇'}else{SETTINGS.soundOn=true;$('soundBtn').classList.remove('muted');$('soundBtn').textContent='🔊'}}
+function selectMode(m){
+  SETTINGS.mode=m;
+  document.querySelectorAll('#modeSelector .opt-btn').forEach(b=>b.classList.remove('active'));
+  event.target.closest('.opt-btn').classList.add('active');
+  $('soloInputWrap').classList.toggle('hidden',m==='group');
+  $('buzzerModeOption').classList.toggle('hidden', m==='solo');
+  if (m==='solo') {
+    // buzzer mode only makes sense in group mode — force back to manual team-name entry
+    SETTINGS.buzzerMode = false;
+    document.querySelectorAll('#buzzerModeSelector .opt-btn').forEach((b,i)=>b.classList.toggle('active', i===0));
+    $('buzzerRoomWrap').classList.add('hidden');
+    $('teamInputsWrap').classList.add('hidden');
+  } else {
+    $('teamInputsWrap').classList.toggle('hidden', SETTINGS.buzzerMode);
+    $('buzzerRoomWrap').classList.toggle('hidden', !SETTINGS.buzzerMode);
+  }
+  AudioEngine.play('click');
+}
+function toggleSound(){SETTINGS.soundOn=!SETTINGS.soundOn;$('soundBtn').classList.toggle('muted',!SETTINGS.soundOn);$('soundBtn').innerHTML=iconSVG(SETTINGS.soundOn?'volume':'volume-mute');if(SETTINGS.soundOn)AudioEngine.play('pop')}
+function setVolume(v){SETTINGS.volume=v/100;if(v==0){SETTINGS.soundOn=false;$('soundBtn').classList.add('muted');$('soundBtn').innerHTML=iconSVG('volume-mute')}else{SETTINGS.soundOn=true;$('soundBtn').classList.remove('muted');$('soundBtn').innerHTML=iconSVG('volume')}}
 function saveQuestions(){try{localStorage.setItem('khamen_questions',JSON.stringify(ALL_Q))}catch(e){}}
 function resetToDefaults(){gameConfirm('متأكد تبي ترجع الأسئلة الأصلية؟ بتنمسح كل التعديلات!',function(){ALL_Q=JSON.parse(JSON.stringify(DEFAULT_Q));nextQId=21;saveQuestions();renderEditorList()},'🔄')}
 
 // ========= EDITOR (full edit) =========
 let editingIndex=-1;
-function openEditor(){AudioEngine.play('open');$('setupScreen').classList.add('hidden');$('editorScreen').classList.remove('hidden');editingIndex=-1;renderEditorList()}
+function openEditor(){AudioEngine.play('open');$('setupScreen').classList.add('hidden');$('editorScreen').classList.remove('hidden');editingIndex=-1;if($('editorSearch'))$('editorSearch').value='';renderEditorList()}
 function closeEditor(){AudioEngine.play('close');$('editorScreen').classList.add('hidden');$('setupScreen').classList.remove('hidden')}
-function renderEditorList(){const list=$('editorList');list.innerHTML='';ALL_Q.forEach((q,i)=>{const d=document.createElement('div');d.className='eq-item';d.innerHTML=`<span class="eq-id">#${q.id||'—'}</span><span class="eq-text">${q.q}</span><span class="eq-count">${q.a.length} إجابات</span><button class="eq-edit" onclick="editQ(${i})">✏️</button><button class="eq-del" onclick="deleteQ(${i})">🗑️</button>`;list.appendChild(d)});$('qCount').textContent=ALL_Q.length}
+function clearEditorSearch(){$('editorSearch').value='';renderEditorList();$('editorSearch').focus()}
+function renderEditorList(){
+  const list=$('editorList');list.innerHTML='';
+  const term=($('editorSearch')?$('editorSearch').value:'').trim().toLowerCase();
+  $('editorSearchClear').classList.toggle('hidden',!term);
+  const items=ALL_Q.map((q,i)=>({q,i})).filter(({q})=>{
+    if(!term)return true;
+    if(q.q.toLowerCase().includes(term))return true;
+    return q.a.some(ans=>ans.t.toLowerCase().includes(term));
+  });
+  $('editorEmpty').classList.toggle('hidden',items.length>0);
+  items.forEach(({q,i})=>{
+    const d=document.createElement('div');d.className='eq-item';
+    const idSpan=document.createElement('span');idSpan.className='eq-id';idSpan.textContent='#'+(q.id||'—');
+    const textSpan=document.createElement('span');textSpan.className='eq-text';textSpan.textContent=q.q;
+    const countSpan=document.createElement('span');countSpan.className='eq-count';countSpan.textContent=q.a.length+' إجابات';
+    const editBtn=document.createElement('button');editBtn.className='eq-edit';editBtn.appendChild(iconEl('pencil'));editBtn.onclick=()=>editQ(i);
+    const delBtn=document.createElement('button');delBtn.className='eq-del';delBtn.appendChild(iconEl('trash'));delBtn.onclick=()=>deleteQ(i);
+    d.append(idSpan,textSpan,countSpan,editBtn,delBtn);
+    list.appendChild(d);
+  });
+  $('qCount').textContent=ALL_Q.length;
+}
 function deleteQ(i){if(ALL_Q.length<=1)return showModal('⚠️','','لازم يكون فيه على الأقل سؤال واحد!');ALL_Q.splice(i,1);saveQuestions();renderEditorList()}
-function editQ(i){editingIndex=i;const q=ALL_Q[i];$('newQ').value=q.q;const rows=document.querySelectorAll('#newAnswers .ea-row');rows.forEach((row,j)=>{row.querySelector('.ea-ans').value=q.a[j]?q.a[j].t:'';row.querySelector('.ea-pts').value=q.a[j]?q.a[j].p:''});$('addQBtn').textContent='💾 حفظ التعديل';$('newQ').scrollIntoView({behavior:'smooth'})}
-function addOrUpdateQ(){const q=$('newQ').value.trim();if(!q)return showModal('⚠️','','اكتب السؤال!');const rows=document.querySelectorAll('#newAnswers .ea-row');const answers=[];rows.forEach(row=>{const t=row.querySelector('.ea-ans').value.trim();const p=parseInt(row.querySelector('.ea-pts').value);if(t&&p>0)answers.push({t,p})});if(answers.length<2)return showModal('⚠️','','أضف على الأقل إجابتين مع النقاط!');if(editingIndex>=0){ALL_Q[editingIndex]={id:ALL_Q[editingIndex].id,q,a:answers};editingIndex=-1;$('addQBtn').textContent='➕ أضف السؤال'}else{ALL_Q.push({id:nextQId++,q,a:answers})}$('newQ').value='';document.querySelectorAll('#newAnswers input').forEach(i=>i.value='');saveQuestions();renderEditorList()}
+function editQ(i){editingIndex=i;const q=ALL_Q[i];$('newQ').value=q.q;const rows=document.querySelectorAll('#newAnswers .ea-row');rows.forEach((row,j)=>{row.querySelector('.ea-ans').value=q.a[j]?q.a[j].t:'';row.querySelector('.ea-pts').value=q.a[j]?q.a[j].p:''});$('addQBtn').innerHTML=iconSVG('save')+' حفظ التعديل';$('newQ').scrollIntoView({behavior:'smooth'})}
+function addOrUpdateQ(){const q=$('newQ').value.trim();if(!q)return showModal('⚠️','','اكتب السؤال!');const rows=document.querySelectorAll('#newAnswers .ea-row');const answers=[];rows.forEach(row=>{const t=row.querySelector('.ea-ans').value.trim();const p=parseInt(row.querySelector('.ea-pts').value);if(t&&p>0)answers.push({t,p})});if(answers.length<2)return showModal('⚠️','','أضف على الأقل إجابتين مع النقاط!');if(editingIndex>=0){ALL_Q[editingIndex]={id:ALL_Q[editingIndex].id,q,a:answers};editingIndex=-1;$('addQBtn').innerHTML=iconSVG('plus')+' أضف السؤال'}else{ALL_Q.push({id:nextQId++,q,a:answers})}$('newQ').value='';document.querySelectorAll('#newAnswers input').forEach(i=>i.value='');saveQuestions();renderEditorList()}
 
 // ========= DOWNLOAD QUESTIONS PDF =========
 function downloadQuestionsPDF(){
@@ -667,8 +874,12 @@ function initGame(){
 if(!checkLicenseForPlay()) return;
 const totalNeeded=SETTINGS.rounds*Q_PER_ROUND;if(ALL_Q.length<totalNeeded)return showModal('⚠️','','تحتاج '+totalNeeded+' سؤال ('+SETTINGS.rounds+' جولات × '+Q_PER_ROUND+' أسئلة) لكن عندك '+ALL_Q.length+' فقط!');
 const isSolo=SETTINGS.mode==='solo';
-G.t1.name=isSolo?($('inpSolo').value.trim()||'اللاعب'):($('inp1').value.trim()||'الفريق الأول');
-G.t2.name=isSolo?'':($('inp2').value.trim()||'الفريق الثاني');
+if(!isSolo && SETTINGS.buzzerMode){
+  if(!BUZZER.channel) return showModal('⚠️','','أنشئ غرفة البازر الأول!');
+  if(!BUZZER.slotNames[1]||!BUZZER.slotNames[2]) return showModal('⚠️','','لازم الفريقين ينضمون للغرفة قبل ما تبدأ اللعبة!');
+}
+G.t1.name=isSolo?($('inpSolo').value.trim()||'اللاعب'):(SETTINGS.buzzerMode?BUZZER.slotNames[1]:($('inp1').value.trim()||'الفريق الأول'));
+G.t2.name=isSolo?'':(SETTINGS.buzzerMode?BUZZER.slotNames[2]:($('inp2').value.trim()||'الفريق الثاني'));
 G.t1.score=0;G.t2.score=0;G.soloScore=0;G.soloStrikes=0;G.playing=1;G.round=0;G.qIndex=0;G.qInRound=0;
 G.questions=shuffle(ALL_Q).slice(0,totalNeeded);G.stats={roundScores:[],totalReveals:0,totalStrikes:0,bestRound:{team:'',pts:0},fastestReveal:null,roundStartTime:0};
 // Toggle solo/group mode on game screen
@@ -677,6 +888,7 @@ if(!isSolo){$('tn1').textContent=G.t1.name;$('tn2').textContent=G.t2.name;$('ctr
 else{$('soloName').textContent=G.t1.name;$('soloPts').textContent='0'}
 $('setupScreen').classList.add('hidden');$('gameScreen').classList.remove('hidden');$('goScreen').classList.add('hidden');
 if(SETTINGS.timer>0)$('timerWrap').classList.remove('hidden');else $('timerWrap').classList.add('hidden');
+$('buzzerUnlockBtn').classList.toggle('hidden', isSolo || !SETTINGS.buzzerMode);
 AudioEngine.play('start');
 loadQuestion()}
 
@@ -688,6 +900,7 @@ $('qText').textContent=q.q;$('roundBadge').textContent='الجولة '+(G.round+
 for(let i=1;i<=3;i++){$('sx'+i).classList.remove('hit');if($('ssx'+i))$('ssx'+i).classList.remove('hit')}
 const board=$('board');board.innerHTML='';q.a.forEach((ans,i)=>{const d=document.createElement('div');d.className='flip-card';d.id='sl'+i;d.onclick=()=>revealAnswer(i);d.innerHTML='<div class="flip-inner"><div class="flip-front"><div class="num">'+(i+1)+'</div><div class="txt"><span class="dots">● ● ● ● ●</span></div></div><div class="flip-back"><div class="num">'+(i+1)+'</div><div class="txt">'+ans.t+'</div><div class="pts">'+ans.p+'</div></div></div>';board.appendChild(d)});
 if(SETTINGS.mode==='solo'){const inp=$('soloGuess');if(inp){inp.value='';setTimeout(()=>inp.focus(),100)}}
+if(SETTINGS.buzzerMode){ hideBuzzBanner(); unlockGameBuzzer(); }
 updateUI();resetTimer()}
 
 // ========= TIMER =========
@@ -699,7 +912,7 @@ function updateTimerDisplay(){const pct=(G.timerLeft/SETTINGS.timer)*100;const e
 el.classList.remove('warn','danger');
 if(pct<=20)el.classList.add('danger');
 else if(pct<=40)el.classList.add('warn')}
-function updateTimerBtn(){const btn=$('timerToggleBtn');if(!btn)return;if(G.timerRunning){btn.textContent='⏸️ إيقاف';btn.className='timer-ctrl-btn pause'}else{btn.textContent='▶️ تشغيل';btn.className='timer-ctrl-btn play'}}
+function updateTimerBtn(){const btn=$('timerToggleBtn');if(!btn)return;if(G.timerRunning){btn.innerHTML=iconSVG('pause')+' إيقاف';btn.className='timer-ctrl-btn pause'}else{btn.innerHTML=iconSVG('play')+' تشغيل';btn.className='timer-ctrl-btn play'}}
 function stopTimer(){clearInterval(G.timerInterval);G.timerRunning=false}
 
 // ========= REVEAL =========
@@ -779,11 +992,11 @@ const q=G.questions[G.qIndex];let earnedThisQ=0;G.revealed.forEach(idx=>{earnedT
 // Take back the points for steal opportunity
 if(earnedThisQ>0){currentTeam.score-=earnedThisQ;G.stealPts=earnedThisQ;G.stealFrom=currentTeamName;G.stealMode=true;updateUI()}
 const stealMsg=earnedThisQ>0?' — لو '+otherName+' جاوب صح ياخذ '+earnedThisQ+' نقطة!':'';
-showModal('٣ أخطاء! ✕','','الدور ينتقل لـ '+otherName+stealMsg);setTeam(other);G.strikes=0;for(let i=1;i<=3;i++)$('sx'+i).classList.remove('hit')},900)}}
+showModal('٣ أخطاء! ✕','','الدور ينتقل لـ '+otherName+stealMsg);setTeam(other);if(SETTINGS.buzzerMode)hideBuzzBanner();G.strikes=0;for(let i=1;i<=3;i++)$('sx'+i).classList.remove('hit')},900)}}
 function resetStrikes(){G.strikes=0;for(let i=1;i<=3;i++)$('sx'+i).classList.remove('hit');AudioEngine.play('pop')}
 
 // ========= TEAM =========
-function setTeam(n){G.playing=n;$('ctrlT1').classList.toggle('active-team',n===1);$('ctrlT2').classList.toggle('active-team',n===2);updateUI();AudioEngine.play('switch')}
+function setTeam(n){G.playing=n;$('ctrlT1').classList.toggle('active-team',n===1);$('ctrlT2').classList.toggle('active-team',n===2);updateUI();AudioEngine.play('switch',{pan:n===1?-0.5:0.5})}
 
 // ========= AWARD & NEXT =========
 function revealAll(){const q=G.questions[G.qIndex];q.a.forEach((_,i)=>{if(!G.revealed.has(i)){G.revealed.add(i);$('sl'+i).classList.add('revealed')}})}
@@ -813,7 +1026,8 @@ function closeModal(){$('modal').classList.remove('show');AudioEngine.play('clic
 
 // Custom confirm (replaces browser confirm)
 function gameConfirm(msg, onYes, icon){
-  $('confirmIcon').textContent = icon || '⚠️';
+  const iconKey = EMOJI_ICON_MAP[icon] || icon || 'warning';
+  $('confirmIcon').innerHTML = iconSVG(iconKey);
   $('confirmTitle').textContent = 'تأكيد';
   $('confirmMsg').textContent = msg;
   $('confirmYes').onclick = function(){ closeConfirm(); AudioEngine.play('click'); onYes(); };
@@ -826,7 +1040,7 @@ function closeConfirm(){ $('confirmModal').classList.remove('show'); AudioEngine
 function endGame(){stopTimer();$('gameScreen').classList.add('hidden');$('goScreen').classList.remove('hidden');
 if(SETTINGS.mode==='solo'){$('goName').textContent=G.t1.name;$('goScore').textContent=G.soloScore+' نقطة';AudioEngine.play('win');confetti();renderStats();saveResult({name:G.t1.name,score:G.soloScore},{name:'—',score:0})}
 else{const w=G.t1.score>=G.t2.score?G.t1:G.t2;const l=G.t1.score>=G.t2.score?G.t2:G.t1;$('goName').textContent=w.name;$('goScore').textContent=w.score+' - '+l.score;AudioEngine.play('win');confetti();renderStats();saveResult(w,l)}}
-function renderStats(){const grid=$('statsGrid');const stats=[{label:'🏆 الفريق الفائز',value:(G.t1.score>=G.t2.score?G.t1:G.t2).name},{label:'📊 '+G.t1.name,value:G.t1.score+' نقطة'},{label:'📊 '+G.t2.name,value:G.t2.score+' نقطة'},{label:'🎯 إجابات مكشوفة',value:G.stats.totalReveals},{label:'✕ مجموع الأخطاء',value:G.stats.totalStrikes},{label:'🔥 أفضل سؤال',value:G.stats.bestRound.pts>0?G.stats.bestRound.team+' ('+G.stats.bestRound.pts+' نقطة)':'-'},{label:'⚡ أسرع إجابة',value:G.stats.fastestReveal?G.stats.fastestReveal+' ثانية':'-'},{label:'📈 الجولات',value:SETTINGS.rounds+' × '+Q_PER_ROUND+' أسئلة'}];grid.innerHTML=stats.map(s=>'<div class="stat-row"><span class="stat-label">'+s.label+'</span><span class="stat-value">'+s.value+'</span></div>').join('')}
+function renderStats(){const grid=$('statsGrid');const stats=[{label:iconSVG('trophy')+' الفريق الفائز',value:(G.t1.score>=G.t2.score?G.t1:G.t2).name},{label:iconSVG('chart')+' '+G.t1.name,value:G.t1.score+' نقطة'},{label:iconSVG('chart')+' '+G.t2.name,value:G.t2.score+' نقطة'},{label:iconSVG('target')+' إجابات مكشوفة',value:G.stats.totalReveals},{label:'✕ مجموع الأخطاء',value:G.stats.totalStrikes},{label:iconSVG('fire')+' أفضل سؤال',value:G.stats.bestRound.pts>0?G.stats.bestRound.team+' ('+G.stats.bestRound.pts+' نقطة)':'-'},{label:iconSVG('bolt')+' أسرع إجابة',value:G.stats.fastestReveal?G.stats.fastestReveal+' ثانية':'-'},{label:iconSVG('trending')+' الجولات',value:SETTINGS.rounds+' × '+Q_PER_ROUND+' أسئلة'}];grid.innerHTML=stats.map(s=>'<div class="stat-row"><span class="stat-label">'+s.label+'</span><span class="stat-value">'+s.value+'</span></div>').join('')}
 
 // ========= HISTORY =========
 function getHistory(){try{return JSON.parse(localStorage.getItem('khamen_history')||'[]')}catch(e){return[]}}
@@ -834,7 +1048,7 @@ function saveResult(w,l){try{const h=getHistory();const now=new Date();h.unshift
 function openHistory(){AudioEngine.play('open');renderHistoryList();$('historyModal').classList.add('show')}
 function closeHistory(){AudioEngine.play('close');$('historyModal').classList.remove('show')}
 function clearHistory(){gameConfirm('متأكد تبي تمسح كل سجل النتائج؟',function(){try{localStorage.removeItem('khamen_history')}catch(e){}renderHistoryList()},'🗑️')}
-function renderHistoryList(){const history=getHistory();const list=$('historyList');if(history.length===0){list.innerHTML='<div class="history-empty">ما فيه نتائج محفوظة بعد 🎮</div>';return}const medals=['🥇','🥈','🥉'];const rc=['gold','silver','bronze'];list.innerHTML=history.map((h,i)=>{const rank=i<3?'<div class="history-rank '+rc[i]+'">'+medals[i]+'</div>':'<div class="history-rank normal">'+(i+1)+'</div>';const t=h.winnerScore===h.loserScore?'🤝':'🏆';return'<div class="history-item">'+rank+'<div class="history-info"><div class="history-winner">'+t+' '+h.winner+'</div><div class="history-detail">'+h.winner+' '+h.winnerScore+' - '+h.loserScore+' '+h.loser+' · '+h.rounds+' جولات · '+h.date+'</div></div><div class="history-score">'+h.winnerScore+'</div></div>'}).join('')}
+function renderHistoryList(){const history=getHistory();const list=$('historyList');if(history.length===0){list.innerHTML='<div class="history-empty">ما فيه نتائج محفوظة بعد</div>';return}const rc=['gold','silver','bronze'];list.innerHTML=history.map((h,i)=>{const rank=i<3?'<div class="history-rank '+rc[i]+'">'+iconSVG('trophy')+'</div>':'<div class="history-rank normal">'+(i+1)+'</div>';const t=iconSVG(h.winnerScore===h.loserScore?'users':'trophy');return'<div class="history-item">'+rank+'<div class="history-info"><div class="history-winner">'+t+' '+h.winner+'</div><div class="history-detail">'+h.winner+' '+h.winnerScore+' - '+h.loserScore+' '+h.loser+' · '+h.rounds+' جولات · '+h.date+'</div></div><div class="history-score">'+h.winnerScore+'</div></div>'}).join('')}
 function restart(){$('goScreen').classList.add('hidden');
   if(isLicensed()){$('setupScreen').classList.remove('hidden');updateNavKey();updateNavUser()}
   else{$('gateScreen').classList.remove('hidden');updateGateScreen()}
@@ -845,18 +1059,22 @@ function confetti(){const style=getComputedStyle(document.body);const cols=[styl
 
 // ========= INTRO =========
 function dismissIntro(){
-  $('introScreen').classList.add('hidden');
-  // No sound on intro dismiss
-  // Check if already logged in
-  const name=getCurrentUsername();
-  if(name && getCurrentUser()){
-    afterAuth();
-  } else {
-    $('authScreen').classList.remove('hidden');
-    authIsRegister=false;
-    $('authUser').value='';$('authPass').value='';
-    $('authError').classList.add('hidden');
-  }
+  const introEl=document.querySelector('#introScreen .intro');
+  if(!introEl||introEl.classList.contains('leaving'))return;
+  introEl.classList.add('leaving');
+  setTimeout(()=>{
+    $('introScreen').classList.add('hidden');
+    // Check if already logged in
+    const name=getCurrentUsername();
+    if(name && getCurrentUser()){
+      afterAuth();
+    } else {
+      $('authScreen').classList.remove('hidden');
+      authIsRegister=false;
+      $('authUser').value='';$('authPass').value='';
+      $('authError').classList.add('hidden');
+    }
+  }, 480);
 }
 $('introScreen').addEventListener('click',dismissIntro);
 
@@ -869,7 +1087,7 @@ function useTool(type) {
   const q = G.questions[G.qIndex];
   // Check if all answers already revealed
   const hidden = q.a.filter((_, i) => !G.revealed.has(i));
-  if (hidden.length === 0 && type !== 'shield') AudioEngine.play('error');return showModal('⚠️', '', 'كل الإجابات مكشوفة — ما تحتاج مساعدة!');
+  if (hidden.length === 0 && type !== 'shield') { AudioEngine.play('error'); return showModal('⚠️', '', 'كل الإجابات مكشوفة — ما تحتاج مساعدة!'); }
 
   const isSolo = SETTINGS.mode === 'solo';
   const team = isSolo ? null : (G.playing === 1 ? G.t1 : G.t2);
@@ -877,8 +1095,8 @@ function useTool(type) {
   const costs = { letter: 10, hint: 15, shield: 20 };
   const cost = costs[type];
 
-  if (G.toolsUsed[type]) AudioEngine.play('error');return showModal('⚠️', '', 'استخدمت هالأداة بهالسؤال!');
-  if (score < cost) AudioEngine.play('error');return showModal('⚠️', '', 'ما عندك نقاط كافية! تحتاج ' + cost);
+  if (G.toolsUsed[type]) { AudioEngine.play('error'); return showModal('⚠️', '', 'استخدمت هالأداة بهالسؤال!'); }
+  if (score < cost) { AudioEngine.play('error'); return showModal('⚠️', '', 'ما عندك نقاط كافية! تحتاج ' + cost); }
 
   if (isSolo) G.soloScore -= cost;
   else team.score -= cost;
@@ -984,3 +1202,37 @@ if(e.key==='Enter'&&!$('gateScreen').classList.contains('hidden'))gateActivate()
 document.body.setAttribute('data-theme','sand');
 try { $('volSlider').value = SETTINGS.volume * 100; } catch(e) {}
 updateNavKey();
+
+// ========= LANDING PAGE: SCROLL REVEAL + ACTIVE NAV LINK =========
+// Note: .landing-scroll never actually grows an internal scrollbar (its
+// height always matches its content), so the real scrolling context is the
+// browser window/document itself — observers must use the default root
+// (viewport), not that element, or intersection ratios come out wrong.
+(function(){
+  const revealEls = document.querySelectorAll('.feature-card, .step-item, .settings-section');
+  if(revealEls.length && 'IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){ entry.target.classList.add('in-view'); io.unobserve(entry.target); }
+      });
+    }, {threshold:0.15, rootMargin:'0px 0px -40px 0px'});
+    revealEls.forEach(el=>io.observe(el));
+  } else {
+    revealEls.forEach(el=>el.classList.add('in-view'));
+  }
+
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = ['home','features','howto','settings'].map(id=>$(id)).filter(Boolean);
+  if(sections.length && navLinks.length && 'IntersectionObserver' in window){
+    const ratios = new Map();
+    const io2 = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{ ratios.set(entry.target.id, entry.intersectionRatio) });
+      let bestId=null, bestRatio=0;
+      ratios.forEach((ratio,id)=>{ if(ratio>bestRatio){ bestRatio=ratio; bestId=id } });
+      if(bestId){
+        navLinks.forEach(l=>l.classList.toggle('current', !!(l.getAttribute('onclick')&&l.getAttribute('onclick').includes("'"+bestId+"'"))));
+      }
+    }, {threshold:[0,0.25,0.5,0.75,1]});
+    sections.forEach(s=>io2.observe(s));
+  }
+})();

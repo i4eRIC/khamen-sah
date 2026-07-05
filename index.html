@@ -6,8 +6,54 @@
   <title>خمّن صح</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Lalezar&family=Readex+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.2-6.2 7-6.2s7 2.6 7 6.2"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19.5c0-3 2.4-5.3 5.5-5.3s5.5 2.3 5.5 5.3"/><circle cx="17" cy="9" r="2.4"/><path d="M15.2 14.7c2.6.4 4.3 2.4 4.3 4.8"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="6.5" y="11" width="11" height="9.5" rx="2"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></symbol>
+<symbol id="i-unlock" viewBox="0 0 24 24"><rect x="6.5" y="11" width="11" height="9.5" rx="2"/><path d="M9 11V8a3 3 0 0 1 5.5-1.7"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="3.4"/><path d="M10.4 12.6 19 4M16.4 7.2l2.2 2.2M13.6 10l2 2"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1"/><rect x="3" y="6.5" width="18" height="3.5" rx="1"/><line x1="12" y1="6.5" x2="12" y2="20"/><path d="M12 6.5c0-2.2-1.8-3.5-3.2-3.5S6 4.3 6 5.6 7.3 6.5 8.6 6.5H12Z"/><path d="M12 6.5c0-2.2 1.8-3.5 3.2-3.5S18 4.3 18 5.6 16.7 6.5 15.4 6.5H12Z"/></symbol>
+<symbol id="i-door" viewBox="0 0 24 24"><path d="M10 4H6a1.2 1.2 0 0 0-1.2 1.2v13.6A1.2 1.2 0 0 0 6 20h4"/><path d="M20 12H9.5M16.5 8.5 20 12l-3.5 3.5"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><line x1="12" y1="17.5" x2="12" y2="21"/><line x1="8.5" y1="21" x2="15.5" y2="21"/></symbol>
+<symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="15" rx="2"/><rect x="8" y="3" width="13" height="15" rx="2"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20.2 4.8 16 15.2 5.6l3.2 3.2L8 19.2 4 20.2Z"/><line x1="13" y1="7.6" x2="16.4" y2="11"/></symbol>
+<symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 3.2 17.4c1-.4 1.3-1.7.6-2.5l-.4-.5c-.7-.8-.3-2 .7-2.3l1.3-.4c1.8-.5 2.9-2.3 2.5-4.1C19.2 6.2 15.9 3 12 3Z"/><circle cx="8" cy="11" r="1.1"/><circle cx="8.5" cy="15.5" r="1.1"/><circle cx="12.5" cy="8" r="1.1"/><circle cx="16" cy="9.5" r="1.1"/></symbol>
+<symbol id="i-tv" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="13" rx="2"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="20"/><rect x="5.5" y="12" width="3" height="8"/><rect x="10.5" y="7" width="3" height="13"/><rect x="15.5" y="3.5" width="3" height="16.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.3" y1="15.3" x2="20.5" y2="20.5"/></symbol>
+<symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L13 19V5L7.5 9.5H4Z"/><path d="M16 9.2a3.5 3.5 0 0 1 0 5.6"/><path d="M18.3 6.8a7 7 0 0 1 0 10.4"/></symbol>
+<symbol id="i-volume-mute" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L13 19V5L7.5 9.5H4Z"/><line x1="16.5" y1="10" x2="21" y2="14.5"/><line x1="21" y1="10" x2="16.5" y2="14.5"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M5.5 10v9.5a.7.7 0 0 0 .7.7H9v-6h6v6h2.8a.7.7 0 0 0 .7-.7V10"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.7"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.2 19 6v6.2c0 4.6-3 7.8-7 8.6-4-.8-7-4-7-8.6V6l7-2.8Z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><line x1="5" y1="7" x2="19" y2="7"/><path d="M9 7V5.2A1.2 1.2 0 0 1 10.2 4h3.6A1.2 1.2 0 0 1 15 5.2V7"/><path d="M7 7l1 12.3a1 1 0 0 0 1 .9h6a1 1 0 0 0 1-.9L17 7"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="14.5"/><path d="M7 10.5 12 15.5 17 10.5"/><path d="M4.5 18.5v1.8a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-1.8"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11.5A8 8 0 1 0 18.8 16"/><polyline points="20 4.5 20 11.5 13 11.5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v12.8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><rect x="8" y="4" width="6" height="5"/><rect x="7" y="13.5" width="10" height="6"/></symbol>
+<symbol id="i-gamepad" viewBox="0 0 24 24"><path d="M6.5 8h11a4 4 0 0 1 3.9 4.9l.7 3.4a2 2 0 0 1-3.3 1.9L16 15.5H8l-2.8 2.7a2 2 0 0 1-3.3-1.9l.7-3.4A4 4 0 0 1 6.5 8Z"/><line x1="7.8" y1="10.8" x2="7.8" y2="13.8"/><line x1="6.3" y1="12.3" x2="9.3" y2="12.3"/><circle cx="16" cy="11" r="0.9" fill="currentColor" stroke="none"/><circle cx="18" cy="13" r="0.9" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3 14.6 9.1 21.3 9.7 16.2 14 17.8 20.6 12 17 6.2 20.6 7.8 14 2.7 9.7 9.4 9.1 12 3Z"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v4.2c0 2.9-2.2 5.1-5 5.3-2.8-.2-5-2.4-5-5.3V4Z"/><path d="M7 5.2H5a2.2 2.2 0 0 0 0 4.4h1.6"/><path d="M17 5.2h2a2.2 2.2 0 0 1 0 4.4h-1.6"/><line x1="12" y1="13.5" x2="12" y2="17"/><path d="M8.5 20.5h7l-.6-3.5h-5.8l-.6 3.5Z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><polyline points="5 12.5 9.5 17 19 6.5"/></symbol>
+<symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 3 22 20H2L12 3Z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-notebook" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.6"/><line x1="8.5" y1="8" x2="15.5" y2="8"/><line x1="8.5" y1="12" x2="15.5" y2="12"/><line x1="8.5" y1="16" x2="13" y2="16"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M17.8 6.2l-1.5 1.5M7.7 16.3l-1.5 1.5M17.8 17.8l-1.5-1.5M7.7 7.7 6.2 6.2"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><line x1="12" y1="7" x2="12" y2="12.3"/><line x1="12" y1="12.3" x2="15.5" y2="14.2"/></symbol>
+<symbol id="i-hash" viewBox="0 0 24 24"><line x1="9" y1="3.5" x2="7" y2="20.5"/><line x1="17" y1="3.5" x2="15" y2="20.5"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="3" y1="15" x2="19" y2="15"/></symbol>
+<symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 2.5c1.2 2.6-1.7 3.8-1.7 6.5a1.7 1.7 0 0 0 3.4 0c0-.8-.3-1.2-.3-1.2 1.3.9 2.6 2.8 2.6 5A5.9 5.9 0 0 1 10 18.5a5.9 5.9 0 0 1-4-5.7c0-4.2 3.2-6.3 4.3-9.1.4-.9.9-1.2 1.7-1.2Z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 5 13.5h5.5L9 21.5 19 10h-6L14.5 2Z"/></symbol>
+<symbol id="i-trending" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 5"/><polyline points="15 5 21 5 21 11"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5Z" stroke-linejoin="round"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6.5" y="4.5" width="4.5" height="15" rx="1.2"/><rect x="13" y="4.5" width="4.5" height="15" rx="1.2"/></symbol>
+</defs>
+</svg>
 
 <div class="bg"></div>
 
@@ -31,11 +77,11 @@
     <div class="auth-box" id="authLoginBox">
       <h2 id="authTitle">تسجيل الدخول</h2>
       <div class="auth-field">
-        <label>👤 اسم المستخدم</label>
+        <label><svg class="icon"><use href="#i-user"></use></svg> اسم المستخدم</label>
         <input type="text" id="authUser" placeholder="ادخل اسم المستخدم" autocomplete="username">
       </div>
       <div class="auth-field">
-        <label>🔒 كلمة المرور</label>
+        <label><svg class="icon"><use href="#i-lock"></use></svg> كلمة المرور</label>
         <input type="password" id="authPass" placeholder="ادخل كلمة المرور" autocomplete="current-password">
       </div>
       <div class="auth-error hidden" id="authError"></div>
@@ -46,7 +92,7 @@
       </div>
     </div>
     <div class="auth-user-info hidden" id="authUserInfo">
-      <div class="auth-avatar" id="authAvatar">👤</div>
+      <div class="auth-avatar" id="authAvatar"><svg class="icon"><use href="#i-user"></use></svg></div>
       <div class="auth-welcome" id="authWelcome">أهلاً!</div>
     </div>
   </div>
@@ -56,28 +102,28 @@
 <div class="app hidden" id="gateScreen">
   <div class="gate-wrap">
     <div class="gate-logo">خمّن صح</div>
-    <div class="gate-user-bar" id="gateUserBar">👤 <span id="gateUsername">—</span></div>
+    <div class="gate-user-bar" id="gateUserBar"><svg class="icon"><use href="#i-user"></use></svg> <span id="gateUsername">—</span></div>
     <div class="gate-desc">لعبة جماعية تفاعلية مع الأهل والأصحاب!</div>
     <div class="gate-cards">
       <div class="gate-card gate-premium">
-        <div class="gate-icon">🔑</div>
+        <div class="gate-icon"><svg class="icon"><use href="#i-key"></use></svg></div>
         <div class="gate-title">تفعيل الاشتراك</div>
         <div class="gate-sub">أدخل مفتاح التفعيل للوصول الكامل</div>
         <div class="gate-input-wrap">
           <input type="text" id="gateKeyInput" placeholder="KS-XXXXX-XXXXX" autocomplete="off" dir="ltr">
         </div>
-        <button class="gate-btn gate-btn-premium" onclick="gateActivate()">تفعيل 🔓</button>
+        <button class="gate-btn gate-btn-premium" onclick="gateActivate()">تفعيل <svg class="icon"><use href="#i-unlock"></use></svg></button>
         <div class="gate-error hidden" id="gateError"></div>
       </div>
       <div class="gate-card gate-trial">
-        <div class="gate-icon">🎁</div>
+        <div class="gate-icon"><svg class="icon"><use href="#i-gift"></use></svg></div>
         <div class="gate-title">التجربة المجانية</div>
         <div class="gate-sub">جرّب سؤال واحد مجاناً بدون تفعيل</div>
         <div class="gate-trial-info" id="gateTrialInfo"></div>
-        <button class="gate-btn gate-btn-trial" id="gateTrialBtn" onclick="gatePlayTrial()">جرّب الآن! 🎮</button>
+        <button class="gate-btn gate-btn-trial" id="gateTrialBtn" onclick="gatePlayTrial()">جرّب الآن! <svg class="icon"><use href="#i-gamepad"></use></svg></button>
       </div>
     </div>
-    <button class="auth-link gate-logout" onclick="authLogout()">🚪 تسجيل خروج</button>
+    <button class="auth-link gate-logout" onclick="authLogout()"><svg class="icon"><use href="#i-door"></use></svg> تسجيل خروج</button>
   </div>
 </div>
 
@@ -95,9 +141,9 @@
         <a href="#settings" class="nav-link" onclick="scrollToSection('settings')">الإعدادات</a>
       </div>
       <button class="nav-play" onclick="scrollToSection('settings')">العب الآن</button>
-      <button class="nav-key-btn" id="navKeyBtn" onclick="openKeyPopup()" title="حالة الاشتراك">🔑</button>
-      <button class="nav-user-btn" id="navUserBtn" onclick="authLogout()" title="تسجيل خروج">👤</button>
-      <button class="nav-burger" id="navBurger" onclick="toggleNav()">☰</button>
+      <button class="nav-key-btn" id="navKeyBtn" onclick="openKeyPopup()" title="حالة الاشتراك"><svg class="icon"><use href="#i-key"></use></svg></button>
+      <button class="nav-user-btn" id="navUserBtn" onclick="authLogout()" title="تسجيل خروج"><svg class="icon"><use href="#i-user"></use></svg></button>
+      <button class="nav-burger" id="navBurger" onclick="toggleNav()"><svg class="icon"><use href="#i-menu"></use></svg></button>
     </div>
     <div class="nav-accent-line"></div>
   </nav>
@@ -115,52 +161,45 @@
     <!-- SECTION: HERO -->
     <section class="hero-section" id="home">
       <div class="hero-glow"></div>
+      <div class="hero-glow hero-glow2"></div>
+      <div class="hero-eyebrow"><span class="eyebrow-dot"></span>لعبة جماعية للأهل والأصحاب</div>
       <div class="setup-logo">خمّن صح</div>
-      <div class="hero-tagline">لعبة جماعية تفاعلية مع الأهل والأصحاب!</div>
+      <div class="hero-divider"></div>
+      <div class="hero-tagline">اجمعوا الفريقين، خمّنوا <span class="hl">الإجابات</span>، واكسبوا <span class="hl">النقاط</span> — إثارة وضحك تناسب أي تجمّع</div>
       <button class="setup-go hero-cta" onclick="AudioEngine.play('click');scrollToSection('settings')">بدء اللعبة <svg class="play-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="9.5,7 17.5,12 9.5,17" fill="currentColor"/></svg></button>
       <div class="hero-scroll-hint">⌄</div>
     </section>
 
     <!-- SECTION: FEATURES -->
     <section class="land-section" id="features">
-      <h2 class="land-title">⭐ المميزات</h2>
+      <h2 class="land-title"><svg class="icon"><use href="#i-star"></use></svg> المميزات</h2>
       <div class="features-grid">
         <div class="feature-card">
-          <div class="fc-icon">🎤</div>
-          <div class="fc-title">نظام مقدم</div>
-          <div class="fc-desc">المقدم يتحكم بكل شيء — يكشف الإجابات ويضيف الأخطاء</div>
+          <div class="fc-icon"><svg class="icon"><use href="#i-pencil"></use></svg></div>
+          <div class="fc-title">أسئلتك أنت</div>
+          <div class="fc-desc">امسح الجاهز واكتب أسئلة تخص عائلتك أو شلتك بثواني</div>
         </div>
         <div class="feature-card">
-          <div class="fc-icon">🎰</div>
-          <div class="fc-title">قلب البطاقات</div>
-          <div class="fc-desc">أنيميشن ثلاثي الأبعاد لما تنكشف الإجابة</div>
+          <div class="fc-icon"><svg class="icon"><use href="#i-palette"></use></svg></div>
+          <div class="fc-title">شكل يناسب مزاجك</div>
+          <div class="fc-desc">٦ ثيمات: رملي، بحري، غابة، ملكي، غروب، وليلي — بدّل وقتما تبي</div>
         </div>
         <div class="feature-card">
-          <div class="fc-icon">✏️</div>
-          <div class="fc-title">محرر أسئلة</div>
-          <div class="fc-desc">أضف أسئلتك الخاصة وخصص اللعبة لمناسبتك</div>
+          <div class="fc-icon"><svg class="icon"><use href="#i-tv"></use></svg></div>
+          <div class="fc-title">جاهزة للشاشة الكبيرة</div>
+          <div class="fc-desc">وصّلها بالتلفزيون وخلوا الكل يشوف اللعبة من الصالة</div>
         </div>
         <div class="feature-card">
-          <div class="fc-icon">🎨</div>
-          <div class="fc-title">٦ ثيمات</div>
-          <div class="fc-desc">رملي، بحري، غابة، ملكي، غروب، ليلي</div>
-        </div>
-        <div class="feature-card">
-          <div class="fc-icon">📺</div>
-          <div class="fc-title">وضع TV</div>
-          <div class="fc-desc">خطوط ومربعات أكبر للعرض على شاشة كبيرة</div>
-        </div>
-        <div class="feature-card">
-          <div class="fc-icon">📊</div>
-          <div class="fc-title">إحصائيات</div>
-          <div class="fc-desc">سجل نتائج + أفضل جولة + أسرع إجابة</div>
+          <div class="fc-icon"><svg class="icon"><use href="#i-chart"></use></svg></div>
+          <div class="fc-title">مين الأقوى؟</div>
+          <div class="fc-desc">سجل يحفظ كل جولاتكم، ويوريك مين الفريق اللي ما يهزم</div>
         </div>
       </div>
     </section>
 
     <!-- SECTION: HOW TO PLAY -->
     <section class="land-section" id="howto">
-      <h2 class="land-title">🎮 كيف تلعب؟</h2>
+      <h2 class="land-title"><svg class="icon"><use href="#i-gamepad"></use></svg> كيف تلعب؟</h2>
       <div class="steps-list">
         <div class="step-item"><div class="step-num">١</div><div class="step-text"><strong>جهّز اللعبة</strong> — اختر أسماء الفرق، عدد الجولات، ووقت المؤقت</div></div>
         <div class="step-item"><div class="step-num">٢</div><div class="step-text"><strong>السؤال يظهر</strong> — المقدم يقرأ السؤال بصوت عالي والإجابات مخفية</div></div>
@@ -173,13 +212,21 @@
 
     <!-- SECTION: SETTINGS (game setup) -->
     <section class="land-section settings-section" id="settings">
-      <h2 class="land-title">⚙️ إعدادات اللعبة</h2>
+      <h2 class="land-title"><svg class="icon"><use href="#i-settings"></use></svg> إعدادات اللعبة</h2>
 
       <div class="setup-option">
-        <label>🎮 وضع اللعبة</label>
+        <label><svg class="icon"><use href="#i-gamepad"></use></svg> وضع اللعبة</label>
         <div class="option-btns" id="modeSelector">
-          <button class="opt-btn active" onclick="selectMode('group')">👥 جماعي (مقدم + فرق)</button>
-          <button class="opt-btn" onclick="selectMode('solo')">🧑 فردي (اكتب الجواب)</button>
+          <button class="opt-btn active" onclick="selectMode('group')"><svg class="icon"><use href="#i-users"></use></svg> جماعي (مقدم + فرق)</button>
+          <button class="opt-btn" onclick="selectMode('solo')"><svg class="icon"><use href="#i-user"></use></svg> فردي (اكتب الجواب)</button>
+        </div>
+      </div>
+
+      <div class="setup-option" id="buzzerModeOption">
+        <label><svg class="icon"><use href="#i-bolt"></use></svg> طريقة اختيار الفريق المجاوب</label>
+        <div class="option-btns" id="buzzerModeSelector">
+          <button class="opt-btn active" onclick="selectBuzzerMode(false)"><svg class="icon"><use href="#i-mic"></use></svg> يدوي (المقدم يختار)</button>
+          <button class="opt-btn" onclick="selectBuzzerMode(true)"><svg class="icon"><use href="#i-bolt"></use></svg> بازر عن بعد (تجريبي)</button>
         </div>
       </div>
 
@@ -190,6 +237,20 @@
         </div>
       </div>
 
+      <div id="buzzerRoomWrap" class="hidden">
+        <div class="buzzer-room-card">
+          <button class="ctrl-btn ctrl-award" id="createRoomBtn" onclick="createBuzzerRoom()"><svg class="icon"><use href="#i-plus"></use></svg> إنشاء غرفة</button>
+          <div id="buzzerRoomInfo" class="hidden">
+            <div class="buzzer-code" id="buzzerCodeDisplay">-----</div>
+            <div class="buzzer-hint">افتحوا هذا الرابط من جوالاتكم وادخلوا الكود:<br><span id="buzzerJoinUrl"></span></div>
+            <div class="buzzer-slots">
+              <div class="buzzer-slot" id="buzzerSlot1"><span class="bs-label">الفريق ١</span><span class="bs-status" id="bs1status">⏳ بانتظار الانضمام</span></div>
+              <div class="buzzer-slot" id="buzzerSlot2"><span class="bs-label">الفريق ٢</span><span class="bs-status" id="bs2status">⏳ بانتظار الانضمام</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="soloInputWrap" class="hidden">
         <div class="setup-inputs">
           <input id="inpSolo" placeholder="اسمك" maxlength="15">
@@ -197,7 +258,7 @@
       </div>
 
     <div class="setup-option">
-      <label>🔢 عدد الجولات (كل جولة = ٥ أسئلة)</label>
+      <label><svg class="icon"><use href="#i-hash"></use></svg> عدد الجولات (كل جولة = ٥ أسئلة)</label>
       <div class="option-btns" id="roundsSelector">
         <button class="opt-btn" onclick="selectRounds(1)">١</button>
         <button class="opt-btn active" onclick="selectRounds(2)">٢</button>
@@ -207,7 +268,7 @@
     </div>
 
     <div class="setup-option">
-      <label>⏱️ مؤقت الجولة</label>
+      <label><svg class="icon"><use href="#i-clock"></use></svg> مؤقت الجولة</label>
       <div class="option-btns" id="timerSelector">
         <button class="opt-btn" onclick="selectTimer(0)">بدون</button>
         <button class="opt-btn" onclick="selectTimer(30)">٣٠ ثانية</button>
@@ -217,7 +278,7 @@
     </div>
 
     <div class="setup-option">
-      <label>🎨 ثيم اللعبة</label>
+      <label><svg class="icon"><use href="#i-palette"></use></svg> ثيم اللعبة</label>
       <div class="theme-picker">
         <button class="theme-dot active" onclick="selectTheme('sand')" title="رملي"><span style="background:oklch(85% .05 85)"></span></button>
         <button class="theme-dot" onclick="selectTheme('ocean')" title="بحري"><span style="background:#1a3a5c"></span></button>
@@ -229,7 +290,7 @@
     </div>
 
     <div class="setup-option">
-      <label>📱 وضع العرض</label>
+      <label><svg class="icon"><use href="#i-tv"></use></svg> وضع العرض</label>
       <div class="option-btns">
         <button class="opt-btn active" id="tvOff" onclick="selectTV(false)">عادي</button>
         <button class="opt-btn" id="tvOn" onclick="selectTV(true)">شاشة كبيرة TV</button>
@@ -238,15 +299,15 @@
 
     <div class="setup-actions">
       <button class="setup-go" onclick="initGame()">بدء اللعبة <svg class="play-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="9.5,7 17.5,12 9.5,17" fill="currentColor"/></svg></button>
-      <button class="setup-editor-btn" onclick="openEditor()">✏️ محرر الأسئلة</button>
-      <button class="setup-editor-btn" onclick="openHistory()">📝 سجل النتائج</button>
+      <button class="setup-editor-btn" onclick="openEditor()"><svg class="icon"><use href="#i-pencil"></use></svg> محرر الأسئلة</button>
+      <button class="setup-editor-btn" onclick="openHistory()"><svg class="icon"><use href="#i-notebook"></use></svg> سجل النتائج</button>
     </div>
 
     </section>
 
     <!-- FOOTER -->
     <footer class="land-footer">
-      <div class="footer-text">خمّن صح 🎮</div>
+      <div class="footer-text">خمّن صح <svg class="icon"><use href="#i-gamepad"></use></svg></div>
     </footer>
 
   </div><!-- end landing-scroll -->
@@ -256,13 +317,19 @@
 <div class="app hidden" id="editorScreen">
   <div class="editor">
     <div class="editor-header">
-      <h2>✏️ محرر الأسئلة</h2>
+      <h2><svg class="icon"><use href="#i-pencil"></use></svg> محرر الأسئلة</h2>
       <p>أضف أسئلتك الخاصة أو احذف الموجودة</p>
     </div>
     <div class="editor-count">عدد الأسئلة: <span id="qCount">0</span></div>
+    <div class="editor-search-wrap">
+      <svg class="icon editor-search-icon"><use href="#i-search"></use></svg>
+      <input type="text" id="editorSearch" class="editor-search" placeholder="ابحث عن سؤال..." oninput="renderEditorList()">
+      <button class="editor-search-clear hidden" id="editorSearchClear" onclick="clearEditorSearch()">✕</button>
+    </div>
     <div class="editor-list" id="editorList"></div>
+    <div class="editor-empty hidden" id="editorEmpty">ما فيه نتائج مطابقة للبحث</div>
     <div class="editor-add">
-      <div class="ea-title">➕ إضافة سؤال جديد</div>
+      <div class="ea-title"><svg class="icon"><use href="#i-plus"></use></svg> إضافة سؤال جديد</div>
       <input type="text" id="newQ" placeholder="اكتب السؤال هنا..." class="ea-input">
       <div class="ea-answers" id="newAnswers">
         <div class="ea-row"><input placeholder="الإجابة ١" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
@@ -272,12 +339,12 @@
         <div class="ea-row"><input placeholder="الإجابة ٥ (اختياري)" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
         <div class="ea-row"><input placeholder="الإجابة ٦ (اختياري)" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
       </div>
-      <button class="ctrl-btn ctrl-award" id="addQBtn" onclick="addOrUpdateQ()" style="margin-top:12px;width:100%">➕ أضف السؤال</button>
+      <button class="ctrl-btn ctrl-award" id="addQBtn" onclick="addOrUpdateQ()" style="margin-top:12px;width:100%"><svg class="icon"><use href="#i-plus"></use></svg> أضف السؤال</button>
     </div>
     <div class="editor-footer">
       <button class="setup-go" onclick="closeEditor()" style="font-size:1.05rem;padding:12px 40px">← رجوع</button>
-      <button class="setup-editor-btn" onclick="downloadQuestionsPDF()" style="font-size:0.85rem;padding:10px 20px">📄 تحميل PDF</button>
-      <button class="setup-editor-btn" onclick="resetToDefaults()" style="font-size:0.85rem;padding:10px 20px">🔄 استعادة الأصلية</button>
+      <button class="setup-editor-btn" onclick="downloadQuestionsPDF()" style="font-size:0.85rem;padding:10px 20px"><svg class="icon"><use href="#i-download"></use></svg> تحميل PDF</button>
+      <button class="setup-editor-btn" onclick="resetToDefaults()" style="font-size:0.85rem;padding:10px 20px"><svg class="icon"><use href="#i-refresh"></use></svg> استعادة الأصلية</button>
     </div>
   </div>
 </div>
@@ -289,7 +356,7 @@
     <div class="header-logo">خمّن صح</div>
     <div class="header-btns">
       <div class="vol-wrap">
-        <button class="sound-toggle" id="soundBtn" onclick="toggleSound()" title="الصوت">🔊</button>
+        <button class="sound-toggle" id="soundBtn" onclick="toggleSound()" title="الصوت"><svg class="icon"><use href="#i-volume"></use></svg></button>
         <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="70" oninput="setVolume(this.value)" title="مستوى الصوت">
       </div>
       <button class="setting-btn" onclick="openInGameSettings()" title="الإعدادات">
@@ -297,7 +364,7 @@
         <span class="bar bar2"></span>
         <span class="bar bar1"></span>
       </button>
-      <button class="header-icon-btn" onclick="goHome()" title="الرئيسية">🏠</button>
+      <button class="header-icon-btn" onclick="goHome()" title="الرئيسية"><svg class="icon"><use href="#i-home"></use></svg></button>
     </div>
   </div>
 
@@ -308,10 +375,11 @@
       <div class="team-pts" id="tp1">0</div>
     </div>
     <div class="led-timer hidden" id="timerWrap">
+      <div class="led-label"><svg class="icon"><use href="#i-clock"></use></svg> الوقت</div>
       <div class="led-display">
         <span class="led-num" id="timerNum">60</span>
       </div>
-      <button class="timer-ctrl-btn play" id="timerToggleBtn" onclick="toggleTimer()">▶️</button>
+      <button class="timer-ctrl-btn play" id="timerToggleBtn" onclick="toggleTimer()"><svg class="icon"><use href="#i-play"></use></svg> تشغيل</button>
     </div>
     <div class="team-card" id="tc2">
       <div class="team-name" id="tn2">الفريق ٢</div>
@@ -333,12 +401,16 @@
   <!-- ANSWERS BOARD -->
   <div class="board" id="board"></div>
 
+  <!-- BUZZ WINNER NOTICE (experimental buzzer mode) -->
+  <div class="overlay-buzz" id="buzzOverlay"><div class="buzz-banner"><svg class="icon"><use href="#i-bolt"></use></svg> <span id="buzzWinnerText">—</span></div></div>
+
 
   <!-- TOOLS (directly after board) -->
   <div class="tools-bar">
-    <button class="ctrl-btn tool-btn" onclick="useTool('hint')" title="تلميح عن الإجابة الأعلى نقاط">🎯 تلميح <span class="tool-cost">-15</span></button>
-    <button class="ctrl-btn tool-btn" onclick="useTool('letter')" title="يكشف أول حرف من إجابة مخفية">👀 كشف حرف <span class="tool-cost">-10</span></button>
-    <button class="ctrl-btn tool-btn" onclick="useTool('shield')" title="يلغي الستريك التالي">🛡️ درع <span class="tool-cost">-20</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('hint')" title="تلميح عن الإجابة الأعلى نقاط"><svg class="icon"><use href="#i-target"></use></svg> تلميح <span class="tool-cost">-15</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('letter')" title="يكشف أول حرف من إجابة مخفية"><svg class="icon"><use href="#i-eye"></use></svg> كشف حرف <span class="tool-cost">-10</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('shield')" title="يلغي الستريك التالي"><svg class="icon"><use href="#i-shield"></use></svg> درع <span class="tool-cost">-20</span></button>
+    <button class="ctrl-btn tool-btn hidden" id="buzzerUnlockBtn" onclick="unlockGameBuzzer()" title="افتح الأزرار عشان الفرق تقدر تضغط من جوالاتها"><svg class="icon"><use href="#i-bolt"></use></svg> فتح الأزرار</button>
   </div>
 
   <!-- SOLO INPUT -->
@@ -362,7 +434,7 @@
   <!-- GROUP CONTROLS (team switch + actions) -->
   <div class="controls-bar group-only" id="groupControls">
     <div class="controls-row">
-      <button class="ctrl-btn ctrl-team active-team" id="ctrlT1" onclick="setTeam(1)"><span id="ctrlTN1">الفريق ١</span> 🎤</button>
+      <button class="ctrl-btn ctrl-team active-team" id="ctrlT1" onclick="setTeam(1)"><span id="ctrlTN1">الفريق ١</span> <svg class="icon"><use href="#i-mic"></use></svg></button>
       <button class="ctrl-btn ctrl-strike" onclick="addStrike()">✕ خطأ</button>
       <button class="ctrl-btn ctrl-next" onclick="goNext()">⏭️ السؤال التالي</button>
       <button class="ctrl-btn ctrl-team" id="ctrlT2" onclick="setTeam(2)"><span id="ctrlTN2">الفريق ٢</span></button>
@@ -380,9 +452,9 @@
 <!-- ==================== IN-GAME SETTINGS MODAL ==================== -->
 <div class="modal-bg" id="igSettingsModal">
   <div class="modal-card ig-settings-card">
-    <h2>⚙️ الإعدادات</h2>
+    <h2><svg class="icon"><use href="#i-settings"></use></svg> الإعدادات</h2>
     <div class="ig-setting">
-      <label>⏱️ وقت المؤقت</label>
+      <label><svg class="icon"><use href="#i-clock"></use></svg> وقت المؤقت</label>
       <div class="option-btns" id="igTimerSel">
         <button class="opt-btn" onclick="igSetTimer(0)">بدون</button>
         <button class="opt-btn" onclick="igSetTimer(30)">٣٠ ث</button>
@@ -391,7 +463,7 @@
       </div>
     </div>
     <div class="ig-setting">
-      <label>🎨 الثيم</label>
+      <label><svg class="icon"><use href="#i-palette"></use></svg> الثيم</label>
       <div class="theme-picker">
         <button class="theme-dot" onclick="selectTheme('sand')" title="رملي"><span style="background:oklch(85% .05 85)"></span></button>
         <button class="theme-dot" onclick="selectTheme('ocean')" title="بحري"><span style="background:#1a3a5c"></span></button>
@@ -406,27 +478,27 @@
 </div>
 <div class="app hidden" id="goScreen">
   <div class="gameover show">
-    <div class="go-trophy">🏆</div>
+    <div class="go-trophy"><svg class="icon"><use href="#i-trophy"></use></svg></div>
     <div class="go-label">الفائز هو</div>
     <div class="go-name" id="goName">-</div>
     <div class="go-score" id="goScore">-</div>
     <div class="stats-card">
-      <div class="stats-title">📊 إحصائيات اللعبة</div>
+      <div class="stats-title"><svg class="icon"><use href="#i-chart"></use></svg> إحصائيات اللعبة</div>
       <div class="stats-grid" id="statsGrid"></div>
     </div>
-    <button class="setup-go" onclick="restart()" style="font-size:1.1rem;padding:14px 40px;margin-top:20px">العب مرة ثانية 🔁</button>
+    <button class="setup-go" onclick="restart()" style="font-size:1.1rem;padding:14px 40px;margin-top:20px">العب مرة ثانية <svg class="icon"><use href="#i-refresh"></use></svg></button>
   </div>
 </div>
 
 <!-- ==================== HISTORY MODAL ==================== -->
 <div class="modal-bg" id="historyModal">
   <div class="modal-card history-card">
-    <h2>📝 سجل النتائج</h2>
+    <h2><svg class="icon"><use href="#i-notebook"></use></svg> سجل النتائج</h2>
     <div class="history-list" id="historyList">
       <div class="history-empty">ما فيه نتائج محفوظة بعد</div>
     </div>
     <div class="history-footer">
-      <button onclick="clearHistory()">🗑️ مسح السجل</button>
+      <button onclick="clearHistory()"><svg class="icon"><use href="#i-trash"></use></svg> مسح السجل</button>
       <button onclick="closeHistory()">حسناً ✓</button>
     </div>
   </div>
@@ -448,7 +520,7 @@
 <!-- ==================== CUSTOM CONFIRM MODAL ==================== -->
 <div class="modal-bg" id="confirmModal">
   <div class="modal-card confirm-card">
-    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-icon" id="confirmIcon"><svg class="icon"><use href="#i-warning"></use></svg></div>
     <h2 id="confirmTitle">تأكيد</h2>
     <p id="confirmMsg">هل أنت متأكد؟</p>
     <div class="confirm-btns">
@@ -462,7 +534,7 @@
 <div class="modal-bg" id="keyPopup">
   <div class="modal-card key-popup-card">
     <div class="key-status-header" id="keyStatusHeader">
-      <div class="key-icon-big">🔑</div>
+      <div class="key-icon-big"><svg class="icon"><use href="#i-key"></use></svg></div>
       <div class="key-status-badge" id="keyBadge">غير مفعّل</div>
     </div>
     <div class="key-code-display hidden" id="keyCodeDisplay">
