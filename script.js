@@ -1,5 +1,11 @@
-// ========= API CONFIG =========
-const API_URL = 'https://khamen-sah.onrender.com/api';
+// ========= SUPABASE CLIENT (shared: auth, activation, questions, buzzer) =========
+const SUPABASE_URL = 'https://jydohcccucwwnxgbdyqu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5ZG9oY2NjdWN3d254Z2JkeXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDU4MTEsImV4cCI6MjA4OTkyMTgxMX0.hgrBBF4wRtQEWGpwngOm5lN5A_fqIRisLXQxwEzLyDQ';
+let _sb = null;
+function getSb(){
+  if (!_sb) _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return _sb;
+}
 
 // ========= ICON HELPER =========
 const EMOJI_ICON_MAP = {'🚪':'door','🔑':'key','🔄':'refresh','🗑️':'trash','🏠':'home','⚠️':'warning','🛡️':'shield'};
@@ -40,17 +46,12 @@ async function authLogin(){
   if(!user || !pass) return authShowError('ادخل اسم المستخدم وكلمة المرور');
 
   try {
-    const res = await fetch(API_URL+'/auth/login', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:user, password:pass})
-    });
-    const data = await res.json();
-    if(res.ok && data.success){
+    const { data, error } = await getSb().rpc('login_user', { p_username: user, p_password: pass });
+    if(!error && data && data.success){
       saveCurrentUser(data.user);
       afterAuth();
     } else {
-      authShowError(data.message || 'خطأ في اسم المستخدم أو كلمة المرور');
+      authShowError((data && data.message) || 'خطأ في اسم المستخدم أو كلمة المرور');
     }
   } catch(e){
     authShowError('فشل الاتصال بالسيرفر');
@@ -64,17 +65,12 @@ async function authRegister(){
   if(!pass || pass.length < 4) return authShowError('كلمة المرور لازم ٤ حروف على الأقل');
 
   try {
-    const res = await fetch(API_URL+'/auth/register', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:user, password:pass})
-    });
-    const data = await res.json();
-    if(res.ok && data.success){
+    const { data, error } = await getSb().rpc('register_user', { p_username: user, p_password: pass });
+    if(!error && data && data.success){
       saveCurrentUser(data.user);
       afterAuth();
     } else {
-      authShowError(data.message || 'خطأ في التسجيل');
+      authShowError((data && data.message) || 'خطأ في التسجيل');
     }
   } catch(e){
     authShowError('فشل الاتصال بالسيرفر');
@@ -139,10 +135,7 @@ function setTrialUsed(n){
   u.trial_used = n;
   saveCurrentUser(u);
   // Update server too
-  fetch(API_URL+'/auth/update-trial',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({username:u.username, trial_used:n})
-  }).catch(()=>{});
+  getSb().rpc('update_trial', { p_username: u.username, p_trial_used: n }).catch(()=>{});
 }
 
 // --- API: Activate key ---
@@ -151,12 +144,8 @@ async function activateKeyAPI(key){
   const name = getCurrentUsername();
   if(!name) return 'error';
   try {
-    const res = await fetch(API_URL+'/activate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({code:k, email:name})
-    });
-    const data = await res.json();
+    const { data, error } = await getSb().rpc('activate_code', { p_code: k, p_email: name });
+    if(error) return 'error';
     if(data.success){
       // Update local cache
       const u = getCurrentUser();
@@ -178,10 +167,7 @@ function removeLicense(){
   u.is_activated = false;
   u.license_key = '';
   saveCurrentUser(u);
-  fetch(API_URL+'/deactivate',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({code:oldKey, email:u.username})
-  }).catch(()=>{});
+  getSb().rpc('deactivate_code', { p_code: oldKey, p_email: u.username }).catch(()=>{});
 }
 
 // --- Gate screen ---
@@ -594,18 +580,35 @@ try {
 } catch(e) {}
 nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
 
+// ========= QUESTIONS FROM SUPABASE (best-effort — falls back to the built-in set) =========
+async function loadQuestionsFromSupabase(){
+  try{
+    const { data, error } = await getSb().from('questions').select('*');
+    if(error || !Array.isArray(data) || data.length === 0) return;
+    const parsed = data.map(row => {
+      let answers = row.answers;
+      if(typeof answers === 'string'){ try{ answers = JSON.parse(answers) }catch(e){ answers = null } }
+      if(!Array.isArray(answers) || answers.length < 2) return null;
+      const okShape = answers.every(a => a && typeof a.t === 'string' && typeof a.p === 'number');
+      if(!okShape) return null;
+      return { id: row.id, q: row.question, a: answers };
+    }).filter(Boolean);
+    if(parsed.length === 0) return;
+    // don't clobber the player's own local edits made through the question editor
+    const hasLocalEdits = !!localStorage.getItem('khamen_questions');
+    if(!hasLocalEdits){
+      ALL_Q = parsed;
+      nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
+    }
+  }catch(e){ /* keep the built-in question set */ }
+}
+loadQuestionsFromSupabase();
+
 const Q_PER_ROUND = 5;
 let SETTINGS = { rounds: 2, timer: 60, theme: 'sand', tvMode: false, soundOn: true, volume: 0.7, mode: 'group', buzzerMode: false };
 
 // ========= BUZZER / ROOMS (experimental) =========
-const BUZZER_SUPABASE_URL = 'https://jydohcccucwwnxgbdyqu.supabase.co';
-const BUZZER_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5ZG9oY2NjdWN3d254Z2JkeXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDU4MTEsImV4cCI6MjA4OTkyMTgxMX0.hgrBBF4wRtQEWGpwngOm5lN5A_fqIRisLXQxwEzLyDQ';
-let BUZZER = { sb:null, channel:null, roomCode:null, slotNames:{1:null,2:null}, connectedNames:[], unlocked:false, winnerDeclared:false };
-
-function getBuzzerClient(){
-  if (!BUZZER.sb) BUZZER.sb = supabase.createClient(BUZZER_SUPABASE_URL, BUZZER_SUPABASE_ANON_KEY);
-  return BUZZER.sb;
-}
+let BUZZER = { channel:null, roomCode:null, slotNames:{1:null,2:null}, connectedNames:[], unlocked:false, winnerDeclared:false };
 
 function selectBuzzerMode(on){
   SETTINGS.buzzerMode = on;
@@ -629,7 +632,7 @@ function createBuzzerRoom(){
   $('createRoomBtn').classList.add('hidden');
   $('buzzerRoomInfo').classList.remove('hidden');
 
-  const sb = getBuzzerClient();
+  const sb = getSb();
   const channel = sb.channel('room-' + code, { config: { presence: { key: 'host' } } });
 
   channel.on('presence', { event: 'sync' }, () => {
@@ -896,6 +899,7 @@ function loadQuestion(){const q=G.questions[G.qIndex];G.strikes=0;G.soloStrikes=
 // Reset tool button states
 document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('used'));
 $('qText').textContent=q.q;$('roundBadge').textContent='الجولة '+(G.round+1)+' — السؤال '+(G.qInRound+1)+' من '+Q_PER_ROUND+' (#'+(q.id||'')+')';
+renderProgress();
 for(let i=1;i<=3;i++){$('sx'+i).classList.remove('hit');if($('ssx'+i))$('ssx'+i).classList.remove('hit')}
 const board=$('board');board.innerHTML='';q.a.forEach((ans,i)=>{const d=document.createElement('div');d.className='flip-card';d.id='sl'+i;d.onclick=()=>revealAnswer(i);d.innerHTML='<div class="flip-inner"><div class="flip-front"><div class="num">'+(i+1)+'</div><div class="txt"><span class="dots">● ● ● ● ●</span></div></div><div class="flip-back"><div class="num">'+(i+1)+'</div><div class="txt">'+ans.t+'</div><div class="pts">'+ans.p+'</div></div></div>';board.appendChild(d)});
 if(SETTINGS.mode==='solo'){const inp=$('soloGuess');if(inp){inp.value='';setTimeout(()=>inp.focus(),100)}}
@@ -920,6 +924,7 @@ const isFirstReveal = G.revealed.size === 0 && SETTINGS.mode === 'group' && !G.s
 G.revealed.add(i);const q=G.questions[G.qIndex];const pts=q.a[i].p;
 G.stats.totalReveals++;if(!G.stats.fastestReveal)G.stats.fastestReveal=((Date.now()-G.stats.roundStartTime)/1000).toFixed(1);
 $('sl'+i).classList.add('revealed');AudioEngine.play('reveal');
+const maxPts=Math.max.apply(null,q.a.map(x=>x.p));if(pts>0&&pts>=maxPts)miniConfetti();
 
 if(isFirstReveal){
   // First correct answer — ask which team answered
@@ -1011,7 +1016,7 @@ if(!isLicensed() && getTrialUsed() >= LICENSE.maxTrialQuestions){
   updateGateScreen();
   return;
 }
-if(G.qInRound>=Q_PER_ROUND){G.round++;G.qInRound=0;if(G.round>=SETTINGS.rounds){endGame();return}G.playing=G.playing===1?2:1;$('ctrlT1').classList.toggle('active-team',G.playing===1);$('ctrlT2').classList.toggle('active-team',G.playing===2)}
+if(G.qInRound>=Q_PER_ROUND){G.round++;G.qInRound=0;if(G.round>=SETTINGS.rounds){endGame();return}G.playing=G.playing===1?2:1;$('ctrlT1').classList.toggle('active-team',G.playing===1);$('ctrlT2').classList.toggle('active-team',G.playing===2);if(G.qIndex<G.questions.length){showRoundTransition(G.round+1,loadQuestion);return}else{endGame();return}}
 if(G.qIndex<G.questions.length)loadQuestion();else endGame()}
 
 // ========= UI =========
@@ -1034,6 +1039,13 @@ function gameConfirm(msg, onYes, icon){
   AudioEngine.play('open');
 }
 function closeConfirm(){ $('confirmModal').classList.remove('show'); AudioEngine.play('close'); }
+
+// ========= LIVE TOUCHES =========
+function renderProgress(){const el=$('qProgress');if(!el)return;let h='';for(let i=0;i<Q_PER_ROUND;i++){let c='pip';if(i<G.qInRound)c+=' done';else if(i===G.qInRound)c+=' current';h+='<span class="'+c+'"></span>'}el.innerHTML=h}
+
+function showRoundTransition(roundNum,cb){const el=$('roundTrans');if(!el){if(cb)cb();return}$('rtTitle').textContent='الجولة '+roundNum;el.classList.add('show');AudioEngine.play('open');setTimeout(()=>{el.classList.remove('show');if(cb)cb()},2200)}
+
+function miniConfetti(){const style=getComputedStyle(document.body);const cols=[style.getPropertyValue('--gold'),style.getPropertyValue('--confetti1'),style.getPropertyValue('--confetti2'),'#ffffff'];for(let i=0;i<26;i++){const el=document.createElement('div');el.className='confetti';el.style.cssText='left:'+(36+Math.random()*28)+'vw;top:20vh;width:'+(6+Math.random()*8)+'px;height:'+(6+Math.random()*8)+'px;background:'+cols[Math.floor(Math.random()*cols.length)]+';border-radius:'+(Math.random()>0.5?'50%':'2px');document.body.appendChild(el);el.animate([{transform:'translateY(0) rotate(0)',opacity:1},{transform:'translateY(62vh) rotate('+(360+Math.random()*360)+'deg)',opacity:0}],{duration:1400+Math.random()*900,easing:'cubic-bezier(.25,.46,.45,.94)',delay:Math.random()*300}).onfinish=()=>el.remove()}}
 
 // ========= GAME OVER =========
 function endGame(){stopTimer();$('gameScreen').classList.add('hidden');$('goScreen').classList.remove('hidden');
