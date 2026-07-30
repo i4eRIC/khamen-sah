@@ -159,8 +159,9 @@
 
     <!-- SECTION: HERO -->
     <section class="hero-section" id="home">
-      <div class="hero-glow"></div>
-      <div class="hero-glow hero-glow2"></div>
+      <div class="medallion hero-medallion logo-pulse">
+        <div class="medallion-ring"><svg class="icon"><use href="#i-check"></use></svg></div>
+      </div>
       <div class="hero-eyebrow"><span class="eyebrow-dot"></span>لعبة جماعية للأهل والأصحاب</div>
       <div class="setup-logo">خمّن صح</div>
       <div class="hero-divider"></div>
@@ -395,6 +396,7 @@
   <div class="question-bar">
     <div class="q-text" id="qText">...</div>
     <div class="q-badge" id="roundBadge">الجولة ١ — السؤال ١ من ٥</div>
+    <div class="q-progress" id="qProgress"></div>
   </div>
 
   <!-- ANSWERS BOARD -->
@@ -505,6 +507,15 @@
 
 <!-- ==================== OVERLAYS ==================== -->
 <div class="overlay-x" id="oxOverlay"><div class="big">✕</div></div>
+
+<!-- ROUND TRANSITION -->
+<div class="round-transition" id="roundTrans">
+  <div class="rt-inner">
+    <div class="rt-eyebrow">استعدّوا</div>
+    <div class="rt-title disp" id="rtTitle">الجولة ٢</div>
+    <div class="rt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline class="rt-check-line" points="4 12.5 9.5 18 20 6"></polyline></svg></div>
+  </div>
+</div>
 
 <!-- MODAL -->
 <div class="modal-bg" id="modal">
