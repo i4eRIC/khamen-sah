@@ -138,9 +138,23 @@ function setTrialUsed(n){
   getSb().rpc('update_trial', { p_username: u.username, p_trial_used: n }).catch(()=>{});
 }
 
+// --- Normalize a typed key into XXXXX-XXXXX ---
+// Users type keys by hand: Arabic-Indic digits when the keyboard is in Arabic mode,
+// a space instead of the dash, no dash at all, or an en-dash pasted from chat.
+// All of those are the *right* key — strip everything that isn't in the alphabet
+// and rebuild the format so a paying user never sees "الكود غير صحيح".
+function normalizeKey(raw){
+  const digits = '٠١٢٣٤٥٦٧٨٩';
+  const k = String(raw||'')
+    .replace(/[٠-٩]/g, d => digits.indexOf(d))
+    .toUpperCase()
+    .replace(/[^0-9A-Z]/g, '');
+  return k.length === 10 ? k.slice(0,5) + '-' + k.slice(5) : k;
+}
+
 // --- API: Activate key ---
 async function activateKeyAPI(key){
-  const k = key.trim().toUpperCase();
+  const k = normalizeKey(key);
   const name = getCurrentUsername();
   if(!name) return 'error';
   try {
@@ -152,6 +166,7 @@ async function activateKeyAPI(key){
       if(u){ u.is_activated = true; u.license_key = k; saveCurrentUser(u); }
       return 'ok';
     }
+    if(data.rate_limited) return 'limited';
     if(data.message && data.message.includes('حساب ثاني')) return 'used';
     if(data.message && data.message.includes('مستخدم')) return 'used';
     return 'invalid';
@@ -217,6 +232,9 @@ async function gateActivate(){
   } else if(result==='used'){
     $('gateError').textContent='⚠️ هالمفتاح مستخدم من حساب ثاني!';
     $('gateError').classList.remove('hidden');
+  } else if(result==='limited'){
+    $('gateError').textContent='⏳ محاولات كثيرة — انتظر ساعة وحاول مرة ثانية';
+    $('gateError').classList.remove('hidden');
   } else {
     $('gateError').textContent='❌ مفتاح غير صحيح!';
     $('gateError').classList.remove('hidden');
@@ -272,6 +290,9 @@ async function popupActivate(){
     showModal('🎉 تم التفعيل!','✓','مبروك! اللعبة مفعّلة لحسابك');
   } else if(result==='used'){
     errorDisplay.textContent='⚠️ هالمفتاح مستخدم من حساب ثاني!';
+    errorDisplay.classList.remove('hidden');
+  } else if(result==='limited'){
+    errorDisplay.textContent='⏳ محاولات كثيرة — انتظر ساعة';
     errorDisplay.classList.remove('hidden');
   } else {
     errorDisplay.textContent='❌ مفتاح غير صحيح';

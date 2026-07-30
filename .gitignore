@@ -1,2 +1,6 @@
 node_modules/
 .claude/
+
+# أكواد التفعيل بالنص الصريح — لا ترفعها للمستودع أبداً
+codes.txt
+codes.sql
