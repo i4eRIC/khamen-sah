@@ -361,6 +361,12 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   background:transparent; flex-shrink:0;
   border-right:1.5px solid color-mix(in srgb, var(--gold) 45%, transparent);
 }
+/* midnight's --accent is a pale near-white tone (meant for buttons/highlights), which
+   turns the revealed-answer bar white and clashes with its white text. Swap it for gold
+   there specifically, and move the number badge to a dark chip so it still stands out. */
+[data-theme="midnight"] .flip-back { background:var(--gold); border-color:var(--gold-dark) }
+[data-theme="midnight"] .flip-back .num { background:var(--bg); color:var(--gold) }
+[data-theme="midnight"] .flip-back .pts { color:var(--bg); border-right-color:color-mix(in srgb, var(--bg) 45%, transparent) }
 
 /* ===== STRIKES ===== */
 .strikes-display { display:flex; justify-content:center; gap:14px; padding:10px 0 }
