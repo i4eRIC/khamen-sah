@@ -937,7 +937,7 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 /* ===== POWER-UP TOOLS ===== */
 .tools-bar { display:flex; justify-content:center; gap:10px; padding:10px 22px; flex-wrap:wrap; max-width:1000px; margin:0 auto; width:100% }
 .tool-btn {
-  background:transparent !important;
+  background:var(--bg-card2) !important;
   border:1.5px solid var(--border-light) !important;
   border-radius:11px !important;
   color:var(--text-mid) !important; font-size:0.82rem !important;
