@@ -1202,7 +1202,7 @@ function openInGameSettings(){
   });
   // Mark active theme
   document.querySelectorAll('#igSettingsModal .theme-dot').forEach(d=>d.classList.remove('active'));
-  const themes=['sand','ocean','forest','royal','sunset','midnight'];
+  const themes=['sand','ocean','forest','royal','sunset','midnight','navy'];
   document.querySelectorAll('#igSettingsModal .theme-dot').forEach((d,i)=>{
     if(themes[i]===SETTINGS.theme)d.classList.add('active');
   });

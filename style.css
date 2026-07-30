@@ -89,6 +89,22 @@
   --on-accent: #0a0e1a;
 }
 
+/* --accent here is deliberately a deep steel blue, not a light tint: it is painted
+   behind the active team card, whose points sit on it in --gold. Anything lighter
+   drops that pair below 4.5:1 — the reason midnight needs its own overrides below. */
+[data-theme="navy"] {
+  --bg: #0d1526; --bg-card: #16203a; --bg-card2: #1d2b4d;
+  --border: #2e4470; --border-light: #263a5f;
+  --text: #e8eef8; --text-mid: #a3b6d2; --text-soft: #7186a5;
+  --accent: #1c5882; --accent-light: #2471a6; --accent-glow: rgba(28,88,130,0.25);
+  --gold: #f5c451; --gold-dark: #cf9f33; --gold-glow: rgba(245,196,81,0.25);
+  --green: #3ecf8e; --green-bg: #0d2b22; --green-border: #2aa572; --green-glow: rgba(62,207,142,0.2);
+  --red: #1a2740; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
+  --header-bg: #0a1120; --slot-hover-num: #24365c;
+  --confetti1:#f5c451;--confetti2:#3ecf8e;--confetti3:#2471a6;--confetti4:#a78bfa;
+  --on-accent: #eaf3fb;
+}
+
 :root { --slot-h: 72px;
   --shadow: 0 1px 3px rgba(40,30,10,0.05); --shadow-lg: 0 18px 44px rgba(40,40,25,0.14);
   --danger: #e53e3e; --danger-dark: #c53030; --danger-bg: rgba(229,62,62,0.10); --danger-glow: rgba(229,62,62,0.28);
@@ -367,6 +383,17 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 [data-theme="midnight"] .flip-back { background:var(--gold); border-color:var(--gold-dark) }
 [data-theme="midnight"] .flip-back .num { background:var(--bg); color:var(--gold) }
 [data-theme="midnight"] .flip-back .pts { color:var(--bg); border-right-color:color-mix(in srgb, var(--bg) 45%, transparent) }
+/* Same near-white --accent shows up as a background on the two surfaces below.
+   Gold reads as "your turn" far better than a white slab, and ties them to the
+   revealed bars above. Text flips dark so it stays legible on gold. */
+[data-theme="midnight"] .team-card.playing {
+  background:var(--gold); border-color:var(--gold-dark);
+  box-shadow:0 12px 26px var(--gold-glow), inset 0 0 0 4px color-mix(in srgb, var(--bg) 22%, transparent);
+}
+[data-theme="midnight"] .team-card.playing .team-name { color:color-mix(in srgb, var(--bg) 72%, transparent) }
+[data-theme="midnight"] .team-card.playing .team-pts { color:var(--bg) }
+[data-theme="midnight"] .team-card.playing::before { background:var(--bg); color:var(--gold) }
+[data-theme="midnight"] .ctrl-next { background:var(--gold); border-bottom-color:var(--gold-dark) }
 
 /* ===== STRIKES ===== */
 .strikes-display { display:flex; justify-content:center; gap:14px; padding:10px 0 }
@@ -395,7 +422,9 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 }
 .ctrl-strike { background:var(--danger); color:#fff; border-color:transparent; border-bottom:4px solid var(--danger-dark) }
 .ctrl-award { background:var(--accent); color:var(--on-accent); border-color:transparent; border-bottom:4px solid color-mix(in srgb, var(--accent) 60%, #000) }
-.ctrl-next { background:var(--accent); color:#fff; border-color:transparent; border-bottom:4px solid color-mix(in srgb, var(--accent) 55%, #000) }
+/* --on-accent, not #fff: every dark theme's --accent is a light tint, so white
+   label on it sat between 1.2:1 and 2.7:1. .ctrl-award beside it already got this right. */
+.ctrl-next { background:var(--accent); color:var(--on-accent); border-color:transparent; border-bottom:4px solid color-mix(in srgb, var(--accent) 55%, #000) }
 .ctrl-reset { background:var(--bg-card2); color:var(--text-soft); border:2px solid var(--border-light) }
 
 /* ===== OVERLAYS ===== */
