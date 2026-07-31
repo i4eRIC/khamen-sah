@@ -89,6 +89,9 @@
         <span id="authSwitchText">ما عندك حساب؟</span>
         <button class="auth-link" id="authSwitchBtn" onclick="authToggleMode()">إنشاء حساب جديد</button>
       </div>
+      <div class="auth-switch" id="authForgotRow">
+        <button class="auth-link" onclick="openForgot()">نسيت كلمة المرور؟</button>
+      </div>
     </div>
     <div class="auth-user-info hidden" id="authUserInfo">
       <div class="auth-avatar" id="authAvatar"><svg class="icon"><use href="#i-user"></use></svg></div>
@@ -279,15 +282,8 @@
 
     <div class="setup-option">
       <label><svg class="icon"><use href="#i-palette"></use></svg> ثيم اللعبة</label>
-      <div class="theme-picker">
-        <button class="theme-dot active" onclick="selectTheme('sand')" title="رملي"><span style="background:oklch(85% .05 85)"></span></button>
-        <button class="theme-dot" onclick="selectTheme('ocean')" title="بحري"><span style="background:#1a3a5c"></span></button>
-        <button class="theme-dot" onclick="selectTheme('forest')" title="غابة"><span style="background:#1a3c2a"></span></button>
-        <button class="theme-dot" onclick="selectTheme('royal')" title="ملكي"><span style="background:#2d1b4e"></span></button>
-        <button class="theme-dot" onclick="selectTheme('sunset')" title="غروب"><span style="background:#5c2a1a"></span></button>
-        <button class="theme-dot" onclick="selectTheme('midnight')" title="ليلي"><span style="background:#111827"></span></button>
-        <button class="theme-dot" onclick="selectTheme('navy')" title="كحلي"><span style="background:#1c5882"></span></button>
-      </div>
+      <!-- rendered from the THEMES array in script.js -->
+      <div class="theme-picker" data-theme-picker></div>
     </div>
 
     <div class="setup-option">
@@ -466,15 +462,8 @@
     </div>
     <div class="ig-setting">
       <label><svg class="icon"><use href="#i-palette"></use></svg> الثيم</label>
-      <div class="theme-picker">
-        <button class="theme-dot" onclick="selectTheme('sand')" title="رملي"><span style="background:oklch(85% .05 85)"></span></button>
-        <button class="theme-dot" onclick="selectTheme('ocean')" title="بحري"><span style="background:#1a3a5c"></span></button>
-        <button class="theme-dot" onclick="selectTheme('forest')" title="غابة"><span style="background:#1a3c2a"></span></button>
-        <button class="theme-dot" onclick="selectTheme('royal')" title="ملكي"><span style="background:#2d1b4e"></span></button>
-        <button class="theme-dot" onclick="selectTheme('sunset')" title="غروب"><span style="background:#5c2a1a"></span></button>
-        <button class="theme-dot" onclick="selectTheme('midnight')" title="ليلي"><span style="background:#111827"></span></button>
-        <button class="theme-dot" onclick="selectTheme('navy')" title="كحلي"><span style="background:#1c5882"></span></button>
-      </div>
+      <!-- rendered from the THEMES array in script.js -->
+      <div class="theme-picker" data-theme-picker></div>
     </div>
     <button onclick="closeIGSettings()">حسناً ✓</button>
   </div>
@@ -504,6 +493,51 @@
       <button onclick="clearHistory()"><svg class="icon"><use href="#i-trash"></use></svg> مسح السجل</button>
       <button onclick="closeHistory()">حسناً ✓</button>
     </div>
+  </div>
+</div>
+
+<!-- ==================== RECOVERY CODE MODAL ==================== -->
+<!-- Shown once, right after registration. The code is never retrievable again:
+     only its hash is stored, so this is the user's single chance to copy it. -->
+<div class="modal-bg" id="recoveryModal">
+  <div class="modal-card">
+    <h2><svg class="icon"><use href="#i-shield"></use></svg> رمز الاسترجاع</h2>
+    <p class="recovery-note">
+      احفظ هذا الرمز في مكان آمن. هو طريقتك الوحيدة لاستعادة حسابك لو نسيت كلمة المرور،
+      و<strong>ما راح يظهر لك مرة ثانية</strong>.
+    </p>
+    <div class="recovery-code" id="recoveryCodeText" dir="ltr">—</div>
+    <div class="recovery-actions">
+      <button class="ctrl-btn" onclick="copyRecoveryCode()" id="recoveryCopyBtn"><svg class="icon"><use href="#i-download"></use></svg> نسخ</button>
+      <button class="ctrl-btn ctrl-next" onclick="closeRecovery()">حفظته ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FORGOT PASSWORD MODAL ==================== -->
+<div class="modal-bg" id="forgotModal">
+  <div class="modal-card">
+    <h2><svg class="icon"><use href="#i-key"></use></svg> استعادة الحساب</h2>
+    <div class="auth-field">
+      <label><svg class="icon"><use href="#i-user"></use></svg> اسم المستخدم</label>
+      <input type="text" id="fgUser" placeholder="اسم المستخدم" autocomplete="username">
+    </div>
+    <div class="auth-field">
+      <label><svg class="icon"><use href="#i-shield"></use></svg> رمز الاسترجاع</label>
+      <input type="text" id="fgCode" placeholder="XXXXX-XXXXX" dir="ltr" autocomplete="off">
+    </div>
+    <div class="auth-field">
+      <label><svg class="icon"><use href="#i-lock"></use></svg> كلمة المرور الجديدة</label>
+      <input type="password" id="fgPass" placeholder="كلمة المرور الجديدة" autocomplete="new-password">
+    </div>
+    <div class="auth-error hidden" id="fgError"></div>
+    <div class="recovery-actions">
+      <button class="ctrl-btn" onclick="closeForgot()">إلغاء</button>
+      <button class="ctrl-btn ctrl-next" onclick="submitForgot()">تغيير كلمة المرور</button>
+    </div>
+    <p class="recovery-note recovery-note-sm">
+      ما عندك رمز؟ راسل صاحب اللعبة — يقدر يغيّر كلمة مرورك من لوحة الإدارة.
+    </p>
   </div>
 </div>
 

@@ -875,6 +875,21 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 .history-footer button:hover { transform:translateY(-2px) }
 .history-footer button:active { transform:translateY(1px) }
 
+/* ===== ACCOUNT RECOVERY ===== */
+.recovery-note { color:var(--text-mid); font-size:0.88rem; line-height:1.6; margin-bottom:14px }
+.recovery-note strong { color:var(--gold) }
+.recovery-note-sm { font-size:0.76rem; margin:14px 0 0; color:var(--text-soft) }
+/* user-select is disabled globally on body; re-enable it here or the code can't be copied by hand */
+.recovery-code {
+  font-family:'AA Galaxy','Lalezar',monospace; font-size:1.9rem; letter-spacing:0.06em;
+  color:var(--gold); background:var(--bg); border:2px dashed var(--gold-dark);
+  border-radius:var(--r-md); padding:14px 10px; margin-bottom:16px;
+  user-select:all; -webkit-user-select:all; word-break:break-all;
+}
+.recovery-actions { display:flex; gap:8px; justify-content:center; flex-wrap:wrap }
+.recovery-actions .ctrl-btn { flex:1; min-width:120px; justify-content:center }
+#forgotModal .auth-field { text-align:right; margin-bottom:12px }
+
 /* =========================================================================
    SOLO MODE
    ========================================================================= */

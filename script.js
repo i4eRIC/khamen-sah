@@ -68,12 +68,89 @@ async function authRegister(){
     const { data, error } = await getSb().rpc('register_user', { p_username: user, p_password: pass });
     if(!error && data && data.success){
       saveCurrentUser(data.user);
-      afterAuth();
+      // Only chance to show this — the server keeps a hash, not the code itself.
+      // Hold the user on the auth screen until they dismiss it.
+      if(data.recovery_code) showRecoveryCode(data.recovery_code, afterAuth);
+      else afterAuth();
     } else {
       authShowError((data && data.message) || 'خطأ في التسجيل');
     }
   } catch(e){
     authShowError('فشل الاتصال بالسيرفر');
+  }
+}
+
+// ========= ACCOUNT RECOVERY =========
+let recoveryOnClose = null;
+
+function showRecoveryCode(code, onClose){
+  recoveryOnClose = onClose || null;
+  $('recoveryCodeText').textContent = code;
+  $('recoveryCopyBtn').innerHTML = iconSVG('download') + ' نسخ';
+  $('recoveryModal').classList.add('show');
+  AudioEngine.play('open');
+}
+
+function closeRecovery(){
+  $('recoveryModal').classList.remove('show');
+  AudioEngine.play('click');
+  const cb = recoveryOnClose; recoveryOnClose = null;
+  if(cb) cb();
+}
+
+function copyRecoveryCode(){
+  const code = $('recoveryCodeText').textContent;
+  const done = ()=>{ $('recoveryCopyBtn').innerHTML = iconSVG('check') + ' تم النسخ'; };
+  // navigator.clipboard needs a secure context; fall back for plain http / file://
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(code).then(done).catch(fallbackCopy);
+  } else fallbackCopy();
+
+  function fallbackCopy(){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = code; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove(); done();
+    }catch(e){
+      $('recoveryCopyBtn').innerHTML = iconSVG('warning') + ' انسخه يدوياً';
+    }
+  }
+}
+
+function openForgot(){
+  $('fgUser').value = $('authUser').value.trim();
+  $('fgCode').value = ''; $('fgPass').value = '';
+  $('fgError').classList.add('hidden');
+  $('forgotModal').classList.add('show');
+  AudioEngine.play('open');
+}
+
+function closeForgot(){ $('forgotModal').classList.remove('show'); AudioEngine.play('close') }
+
+async function submitForgot(){
+  const user = $('fgUser').value.trim();
+  const code = $('fgCode').value.trim();
+  const pass = $('fgPass').value;
+  const err  = $('fgError');
+  const fail = m => { err.textContent = m; err.classList.remove('hidden'); AudioEngine.play('error') };
+
+  if(!user || !code || !pass) return fail('❌ عبّي كل الحقول');
+  if(pass.length < 4) return fail('❌ كلمة المرور لازم ٤ حروف على الأقل');
+  err.classList.add('hidden');
+
+  try{
+    const { data, error } = await getSb().rpc('reset_password_with_code', {
+      p_username: user, p_code: normalizeKey(code), p_new_password: pass
+    });
+    if(error) return fail('❌ فشل الاتصال بالسيرفر');
+    if(!data || !data.success) return fail(data && data.message ? data.message : '❌ رمز غير صحيح');
+
+    closeForgot();
+    $('authUser').value = user; $('authPass').value = '';
+    showModal('تم التغيير','✓','سجّل دخولك بكلمة المرور الجديدة');
+  }catch(e){
+    fail('❌ فشل الاتصال بالسيرفر');
   }
 }
 
@@ -112,6 +189,7 @@ function authToggleMode(){
   $('authMainBtn').onclick = authIsRegister ? authRegister : authLogin;
   $('authSwitchText').textContent = authIsRegister ? 'عندك حساب؟' : 'ما عندك حساب؟';
   $('authSwitchBtn').textContent = authIsRegister ? 'تسجيل دخول' : 'إنشاء حساب جديد';
+  $('authForgotRow').classList.toggle('hidden', authIsRegister);
   $('authError').classList.add('hidden');
   $('authUser').value='';$('authPass').value='';
 }
@@ -803,7 +881,36 @@ play(type,opts){
 // ========= SETUP =========
 function selectRounds(n){SETTINGS.rounds=n;document.querySelectorAll('#roundsSelector .opt-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');AudioEngine.play('click')}
 function selectTimer(s){SETTINGS.timer=s;document.querySelectorAll('#timerSelector .opt-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');AudioEngine.play('click')}
-function selectTheme(t){SETTINGS.theme=t;document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-dot').forEach(b=>b.classList.remove('active'));event.currentTarget.classList.add('active');AudioEngine.play('pop')}
+// Single source of truth for the theme list. The picker appears twice (setup
+// screen + in-game settings); it used to be hand-written markup in both, so
+// adding a theme meant editing two places and the in-game one matched by array
+// index — a mismatch there silently highlighted the wrong dot.
+const THEMES=[
+  {id:'sand',     name:'رملي', swatch:'oklch(85% .05 85)'},
+  {id:'ocean',    name:'بحري', swatch:'#1a3a5c'},
+  {id:'forest',   name:'غابة', swatch:'#1a3c2a'},
+  {id:'royal',    name:'ملكي', swatch:'#2d1b4e'},
+  {id:'sunset',   name:'غروب', swatch:'#5c2a1a'},
+  {id:'midnight', name:'ليلي', swatch:'#111827'},
+  {id:'navy',     name:'كحلي', swatch:'#1c5882'},
+];
+
+function renderThemePickers(){
+  const html=THEMES.map(t=>
+    '<button class="theme-dot" data-theme="'+t.id+'" onclick="selectTheme(\''+t.id+'\')" title="'+t.name+'">'+
+    '<span style="background:'+t.swatch+'"></span></button>').join('');
+  document.querySelectorAll('[data-theme-picker]').forEach(el=>{el.innerHTML=html});
+  markActiveTheme();
+}
+
+// Matches on the theme id, not click target or index, so both pickers stay in
+// sync no matter which one was used.
+function markActiveTheme(){
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.theme===SETTINGS.theme));
+}
+
+function selectTheme(t){SETTINGS.theme=t;document.body.setAttribute('data-theme',t);markActiveTheme();AudioEngine.play('pop')}
+renderThemePickers();
 function selectTV(on){SETTINGS.tvMode=on;$('tvOff').classList.toggle('active',!on);$('tvOn').classList.toggle('active',on);document.body.classList.toggle('tv-mode',on);AudioEngine.play('click')}
 function selectMode(m){
   SETTINGS.mode=m;
@@ -1076,11 +1183,59 @@ function renderStats(){const grid=$('statsGrid');const stats=[{label:iconSVG('tr
 
 // ========= HISTORY =========
 function getHistory(){try{return JSON.parse(localStorage.getItem('khamen_history')||'[]')}catch(e){return[]}}
-function saveResult(w,l){try{const h=getHistory();const now=new Date();h.unshift({winner:w.name,winnerScore:w.score,loser:l.name,loserScore:l.score,rounds:SETTINGS.rounds,date:now.toLocaleDateString('ar-SA',{year:'numeric',month:'short',day:'numeric'}),time:now.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}),timestamp:Date.now()});if(h.length>50)h.length=50;localStorage.setItem('khamen_history',JSON.stringify(h))}catch(e){}}
-function openHistory(){AudioEngine.play('open');renderHistoryList();$('historyModal').classList.add('show')}
+function saveResult(w,l){try{const h=getHistory();const now=new Date();h.unshift({winner:w.name,winnerScore:w.score,loser:l.name,loserScore:l.score,rounds:SETTINGS.rounds,date:now.toLocaleDateString('ar-SA',{year:'numeric',month:'short',day:'numeric'}),time:now.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}),timestamp:Date.now()});if(h.length>50)h.length=50;localStorage.setItem('khamen_history',JSON.stringify(h))}catch(e){}syncResultToCloud()}
+
+// Fire-and-forget. localStorage stays the source of truth for the history modal,
+// so a failed sync must never block the game-over screen. The cloud copy is what
+// survives a device change and what leaderboards will read later.
+function syncResultToCloud(){
+  const name=getCurrentUsername();
+  if(!name||!G)return;
+  const s=G.stats||{};
+  const fast=Number(s.fastestReveal);
+  try{
+    getSb().rpc('save_game_result',{
+      p_username:name,
+      p_mode:SETTINGS.mode==='solo'?'solo':'teams',
+      p_team1_name:G.t1?G.t1.name:null,
+      p_team2_name:G.t2?G.t2.name:null,
+      p_team1_score:G.t1?G.t1.score|0:0,
+      p_team2_score:G.t2?G.t2.score|0:0,
+      p_solo_score:G.soloScore|0,
+      p_rounds:SETTINGS.rounds|0,
+      p_reveals:s.totalReveals|0,
+      p_strikes:s.totalStrikes|0,
+      p_best_team:s.bestRound?s.bestRound.team||null:null,
+      p_best_pts:s.bestRound?s.bestRound.pts|0:0,
+      p_fastest:isFinite(fast)?fast:null
+    }).catch(()=>{});
+  }catch(e){}
+}
+function openHistory(){AudioEngine.play('open');renderHistoryList();$('historyModal').classList.add('show');if(getHistory().length===0)loadCloudHistory()}
+
+// Same account on a new device: localStorage is empty but the games are still on
+// the server. Only runs when local history is blank, so it never overwrites it.
+async function loadCloudHistory(){
+  const name=getCurrentUsername();
+  if(!name)return;
+  try{
+    const {data,error}=await getSb().rpc('my_game_history',{p_username:name});
+    if(error||!Array.isArray(data)||data.length===0)return;
+    renderHistoryList(data.map(r=>{
+      const solo=r.mode==='solo';
+      const a={name:r.team1_name||'—',score:r.team1_score|0};
+      const b={name:r.team2_name||'—',score:r.team2_score|0};
+      const w=solo?{name:r.team1_name||'—',score:r.solo_score|0}:(a.score>=b.score?a:b);
+      const l=solo?{name:'—',score:0}:(a.score>=b.score?b:a);
+      return{winner:w.name,winnerScore:w.score,loser:l.name,loserScore:l.score,
+             rounds:r.rounds_played|0,
+             date:new Date(r.played_at).toLocaleDateString('ar-SA',{year:'numeric',month:'short',day:'numeric'})};
+    }));
+  }catch(e){}
+}
 function closeHistory(){AudioEngine.play('close');$('historyModal').classList.remove('show')}
 function clearHistory(){gameConfirm('متأكد تبي تمسح كل سجل النتائج؟',function(){try{localStorage.removeItem('khamen_history')}catch(e){}renderHistoryList()},'🗑️')}
-function renderHistoryList(){const history=getHistory();const list=$('historyList');if(history.length===0){list.innerHTML='<div class="history-empty">ما فيه نتائج محفوظة بعد</div>';return}const rc=['gold','silver','bronze'];list.innerHTML=history.map((h,i)=>{const rank=i<3?'<div class="history-rank '+rc[i]+'">'+iconSVG('trophy')+'</div>':'<div class="history-rank normal">'+(i+1)+'</div>';const t=iconSVG(h.winnerScore===h.loserScore?'users':'trophy');return'<div class="history-item">'+rank+'<div class="history-info"><div class="history-winner">'+t+' '+h.winner+'</div><div class="history-detail">'+h.winner+' '+h.winnerScore+' - '+h.loserScore+' '+h.loser+' · '+h.rounds+' جولات · '+h.date+'</div></div><div class="history-score">'+h.winnerScore+'</div></div>'}).join('')}
+function renderHistoryList(rows){const history=rows||getHistory();const list=$('historyList');if(history.length===0){list.innerHTML='<div class="history-empty">ما فيه نتائج محفوظة بعد</div>';return}const rc=['gold','silver','bronze'];list.innerHTML=history.map((h,i)=>{const rank=i<3?'<div class="history-rank '+rc[i]+'">'+iconSVG('trophy')+'</div>':'<div class="history-rank normal">'+(i+1)+'</div>';const t=iconSVG(h.winnerScore===h.loserScore?'users':'trophy');return'<div class="history-item">'+rank+'<div class="history-info"><div class="history-winner">'+t+' '+h.winner+'</div><div class="history-detail">'+h.winner+' '+h.winnerScore+' - '+h.loserScore+' '+h.loser+' · '+h.rounds+' جولات · '+h.date+'</div></div><div class="history-score">'+h.winnerScore+'</div></div>'}).join('')}
 function restart(){$('goScreen').classList.add('hidden');
   if(isLicensed()){$('setupScreen').classList.remove('hidden');updateNavKey();updateNavUser()}
   else{$('gateScreen').classList.remove('hidden');updateGateScreen()}
@@ -1200,12 +1355,7 @@ function openInGameSettings(){
     const vals={'بدون':0,'٣٠ ث':30,'دقيقة':60,'٩٠ ث':90};
     if(vals[b.textContent]===SETTINGS.timer)b.classList.add('active');
   });
-  // Mark active theme
-  document.querySelectorAll('#igSettingsModal .theme-dot').forEach(d=>d.classList.remove('active'));
-  const themes=['sand','ocean','forest','royal','sunset','midnight','navy'];
-  document.querySelectorAll('#igSettingsModal .theme-dot').forEach((d,i)=>{
-    if(themes[i]===SETTINGS.theme)d.classList.add('active');
-  });
+  markActiveTheme();
   $('igSettingsModal').classList.add('show');
   AudioEngine.play('open');
 }

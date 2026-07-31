@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>لوحة الإدارة — خمّن صح</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  html,body{background:var(--bg);min-height:100%;user-select:text}
+  .ad-page{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
+  .ad-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .ad-title{font-family:'AA Galaxy','Lalezar',cursive;font-size:2rem;color:var(--gold)}
+  .ad-card{background:var(--bg-card);border:2px solid var(--border-light);border-radius:var(--r-lg);padding:18px;margin-bottom:16px}
+  .ad-card h2{font-family:'AA Galaxy','Tajawal',sans-serif;font-size:1.1rem;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .ad-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ad-row input{flex:1;min-width:180px}
+  input{background:var(--bg-card2);border:2px solid var(--border-light);border-radius:var(--r-sm);
+        color:var(--text);padding:10px 13px;font-family:'Tajawal',sans-serif;font-size:0.95rem;width:100%}
+  input:focus{outline:none;border-color:var(--gold)}
+  button{font-family:'AA Galaxy','Tajawal',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;
+         padding:10px 18px;border-radius:var(--r-sm);border:2px solid var(--border-light);
+         background:var(--bg-card2);color:var(--text-mid);transition:all .2s var(--ease)}
+  button:hover{transform:translateY(-2px);border-color:var(--gold)}
+  button.primary{background:var(--accent);color:var(--on-accent);border-color:transparent;border-bottom:4px solid var(--gold-dark)}
+  button.danger{background:var(--danger);color:#fff;border-color:transparent;border-bottom:4px solid var(--danger-dark)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .stat{background:var(--bg-card2);border:1.5px solid var(--border-light);border-radius:var(--r-md);padding:12px;text-align:center}
+  .stat .v{font-family:'AA Galaxy','Lalezar',cursive;font-size:1.9rem;color:var(--gold);line-height:1.1}
+  .stat .k{font-size:0.72rem;color:var(--text-soft);margin-top:3px}
+  .stat.warn .v{color:var(--danger)}
+  table{width:100%;border-collapse:collapse;font-size:0.84rem}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--border-light)}
+  th{color:var(--text-soft);font-weight:700;font-size:0.76rem}
+  td{color:var(--text-mid)}
+  .mono{font-family:monospace;direction:ltr;display:inline-block}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:0.7rem;font-weight:800}
+  .tag.used{background:var(--danger-bg);color:var(--danger)}
+  .tag.free{background:var(--green-bg);color:var(--green)}
+  .msg{padding:10px 14px;border-radius:var(--r-sm);font-size:0.86rem;margin-top:10px}
+  .msg.ok{background:var(--green-bg);color:var(--green)}
+  .msg.bad{background:var(--danger-bg);color:var(--danger)}
+  .hidden{display:none!important}
+  .scroll{overflow-x:auto}
+  .gate{max-width:380px;margin:14vh auto 0;text-align:center}
+  .note{color:var(--text-soft);font-size:0.78rem;line-height:1.6;margin-top:10px}
+</style>
+</head>
+<body data-theme="midnight">
+
+<!-- ===== LOGIN GATE ===== -->
+<div class="ad-page gate" id="gate">
+  <div class="ad-title" style="margin-bottom:16px">لوحة الإدارة</div>
+  <div class="ad-card">
+    <input type="password" id="adPass" placeholder="كلمة مرور الإدارة" autocomplete="current-password">
+    <button class="primary" style="width:100%;margin-top:10px" onclick="unlock()">دخول</button>
+    <div class="msg bad hidden" id="gateMsg"></div>
+    <p class="note">
+      كلمة المرور تُتحقَّق داخل قاعدة البيانات ولا تُخزَّن في هذه الصفحة.
+      لو ما ضبطتها بعد، شغّل في SQL Editor:<br>
+      <span class="mono">select public.admin_set_password('...');</span>
+    </p>
+  </div>
+</div>
+
+<!-- ===== PANEL ===== -->
+<div class="ad-page hidden" id="panel">
+  <div class="ad-head">
+    <div class="ad-title">لوحة الإدارة</div>
+    <div class="ad-row">
+      <button onclick="loadOverview()">تحديث</button>
+      <button onclick="lock()">قفل</button>
+    </div>
+  </div>
+
+  <div class="ad-card">
+    <h2>نظرة عامة</h2>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="ad-card">
+    <h2>بحث في الأكواد</h2>
+    <div class="ad-row">
+      <input type="text" id="q" placeholder="كود أو اسم مستخدم" onkeydown="if(event.key==='Enter')findCode()">
+      <button class="primary" onclick="findCode()">بحث</button>
+    </div>
+    <div class="scroll"><table id="codesTbl" class="hidden">
+      <thead><tr><th>الكود</th><th>الحالة</th><th>المستخدم</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="msg bad hidden" id="codesMsg"></div>
+  </div>
+
+  <div class="ad-card">
+    <h2>تغيير كلمة مرور مستخدم</h2>
+    <div class="ad-row">
+      <input type="text" id="ruUser" placeholder="اسم المستخدم">
+      <input type="text" id="ruPass" placeholder="كلمة المرور الجديدة">
+      <button class="primary" onclick="resetUser()">تغيير</button>
+    </div>
+    <div class="msg hidden" id="ruMsg"></div>
+    <p class="note">استخدمها للاعب اللي فقد كلمة مروره ورمز الاسترجاع معاً. بلّغه بها ثم اطلب منه يغيّرها.</p>
+  </div>
+
+  <div class="ad-card">
+    <h2>آخر محاولات الدخول</h2>
+    <div class="scroll"><table id="attTbl">
+      <thead><tr><th>النوع</th><th>المستخدم</th><th>IP</th><th>النتيجة</th><th>الوقت</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="note">ارتفاع مفاجئ في المحاولات الفاشلة من IP واحد = محاولة اختراق. الحد يوقفها تلقائياً، لكن راقبها.</p>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://jydohcccucwwnxgbdyqu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5ZG9oY2NjdWN3d254Z2JkeXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNDU4MTEsImV4cCI6MjA4OTkyMTgxMX0.hgrBBF4wRtQEWGpwngOm5lN5A_fqIRisLXQxwEzLyDQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = id => document.getElementById(id);
+
+// Held in memory only. Every RPC re-verifies it server-side, so a stale tab
+// gets rejected rather than acting with leftover authority.
+let PASS = null;
+
+function show(el, text, ok){
+  el.textContent = text;
+  el.className = 'msg ' + (ok ? 'ok' : 'bad');
+}
+
+async function unlock(){
+  const p = $('adPass').value;
+  if(!p) return show($('gateMsg'), 'ادخل كلمة المرور', false);
+  const { data, error } = await sb.rpc('admin_overview', { p_pass: p });
+  if(error || !data || !data.success){
+    $('gateMsg').classList.remove('hidden');
+    return show($('gateMsg'), (data && data.message) || 'فشل الاتصال', false);
+  }
+  PASS = p;
+  $('adPass').value = '';
+  $('gate').classList.add('hidden');
+  $('panel').classList.remove('hidden');
+  paintOverview(data);
+  loadAttempts();
+}
+
+function lock(){
+  PASS = null;
+  $('panel').classList.add('hidden');
+  $('gate').classList.remove('hidden');
+  $('gateMsg').classList.add('hidden');
+}
+
+async function loadOverview(){
+  const { data } = await sb.rpc('admin_overview', { p_pass: PASS });
+  if(data && data.success){ paintOverview(data); loadAttempts(); }
+  else lock();
+}
+
+function paintOverview(d){
+  const hot = d.failed_logins_24h > 50 || d.failed_activations_24h > 50;
+  $('stats').innerHTML = [
+    ['أكواد متبقية', d.codes_free], ['أكواد مستخدمة', d.codes_used],
+    ['إجمالي الأكواد', d.codes_total], ['حسابات', d.users_total],
+    ['حسابات مفعّلة', d.users_activated], ['مباريات', d.games_played],
+    ['تفعيل فاشل ٢٤س', d.failed_activations_24h, hot], ['دخول فاشل ٢٤س', d.failed_logins_24h, hot],
+  ].map(([k,v,warn]) => `<div class="stat${warn?' warn':''}"><div class="v">${v ?? 0}</div><div class="k">${k}</div></div>`).join('');
+}
+
+async function findCode(){
+  const q = $('q').value.trim();
+  const msg = $('codesMsg'), tbl = $('codesTbl');
+  msg.classList.add('hidden');
+  if(!q){ tbl.classList.add('hidden'); return; }
+
+  const { data } = await sb.rpc('admin_find_code', { p_pass: PASS, p_query: q });
+  if(!data || !data.success){ tbl.classList.add('hidden'); msg.classList.remove('hidden'); return show(msg, (data&&data.message)||'فشل البحث', false); }
+  if(!data.rows.length){ tbl.classList.add('hidden'); msg.classList.remove('hidden'); return show(msg, 'ما فيه نتائج', false); }
+
+  tbl.classList.remove('hidden');
+  tbl.querySelector('tbody').innerHTML = data.rows.map(r => `
+    <tr>
+      <td><span class="mono">${esc(r.code)}</span></td>
+      <td><span class="tag ${r.is_used?'used':'free'}">${r.is_used?'مستخدم':'متاح'}</span></td>
+      <td>${esc(r.user_email || '—')}</td>
+      <td>${r.is_used ? `<button class="danger" onclick="revoke('${esc(r.code)}')">إلغاء</button>` : ''}</td>
+    </tr>`).join('');
+}
+
+async function revoke(code){
+  if(!confirm('إلغاء تفعيل الكود ' + code + '؟ الحساب المرتبط به راح يفقد التفعيل.')) return;
+  const { data } = await sb.rpc('admin_revoke_code', { p_pass: PASS, p_code: code });
+  const msg = $('codesMsg');
+  msg.classList.remove('hidden');
+  show(msg, (data && data.message) || 'فشل', !!(data && data.success));
+  if(data && data.success){ findCode(); loadOverview(); }
+}
+
+async function resetUser(){
+  const u = $('ruUser').value.trim(), p = $('ruPass').value.trim();
+  const msg = $('ruMsg');
+  msg.classList.remove('hidden');
+  if(!u || !p) return show(msg, 'عبّي الحقلين', false);
+  const { data } = await sb.rpc('admin_reset_user_password', { p_pass: PASS, p_username: u, p_new_password: p });
+  show(msg, (data && data.message) || 'فشل', !!(data && data.success));
+  if(data && data.success){ $('ruUser').value=''; $('ruPass').value=''; }
+}
+
+async function loadAttempts(){
+  const { data } = await sb.rpc('admin_recent_attempts', { p_pass: PASS });
+  const body = $('attTbl').querySelector('tbody');
+  if(!data || !data.success){ body.innerHTML = ''; return; }
+  const label = { login:'دخول', register:'تسجيل', reset:'استرجاع' };
+  body.innerHTML = data.rows.map(r => `
+    <tr>
+      <td>${label[r.kind] || esc(r.kind)}</td>
+      <td>${esc(r.identifier)}</td>
+      <td><span class="mono">${esc(r.ip)}</span></td>
+      <td>${r.succeeded ? '<span class="tag free">نجح</span>' : '<span class="tag used">فشل</span>'}</td>
+      <td>${new Date(r.attempted_at).toLocaleString('ar-SA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+    </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-soft)">ما فيه محاولات مسجّلة</td></tr>';
+}
+
+// Code and username values land inside HTML strings above; escape them so a
+// crafted value can't inject markup into the panel.
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+$('adPass').addEventListener('keydown', e => { if(e.key === 'Enter') unlock(); });
+</script>
+</body>
+</html>
