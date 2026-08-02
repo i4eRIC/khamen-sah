@@ -49,6 +49,13 @@ async function authLogin(){
     const { data, error } = await getSb().rpc('login_user', { p_username: user, p_password: pass });
     if(!error && data && data.success){
       saveCurrentUser(data.user);
+      // Pre-v4 accounts have no email, which also blocks Google linking. Ask once
+      // per session rather than gating the game behind it.
+      if(data.needs_email && !sessionStorage.getItem('emailPromptSeen')){
+        sessionStorage.setItem('emailPromptSeen','1');
+        openAddEmail(afterAuth);
+        return;
+      }
       afterAuth();
     } else {
       authShowError((data && data.message) || 'خطأ في اسم المستخدم أو كلمة المرور');
@@ -61,11 +68,13 @@ async function authLogin(){
 async function authRegister(){
   const user = $('authUser').value.trim();
   const pass = $('authPass').value;
+  const mail = $('authEmail').value.trim();
   if(!user || user.length < 3) return authShowError('اسم المستخدم لازم ٣ حروف على الأقل');
+  if(!looksLikeEmail(mail)) return authShowError('ادخل بريداً إلكترونياً صحيحاً');
   if(!pass || pass.length < 4) return authShowError('كلمة المرور لازم ٤ حروف على الأقل');
 
   try {
-    const { data, error } = await getSb().rpc('register_user', { p_username: user, p_password: pass });
+    const { data, error } = await getSb().rpc('register_user', { p_username: user, p_password: pass, p_email: mail });
     if(!error && data && data.success){
       saveCurrentUser(data.user);
       // Only chance to show this — the server keeps a hash, not the code itself.
@@ -154,9 +163,125 @@ async function submitForgot(){
   }
 }
 
+// ========= GOOGLE SIGN-IN =========
+// Two identity systems coexist: the custom profiles/password login and Supabase
+// Auth. Google only ever produces the second; google_bootstrap is what maps it
+// onto a profiles row, matching an existing account by email when there is one.
+async function googleSignIn(){
+  try{
+    // Land back on this same page rather than the site root, so a deployment
+    // served from a subpath still returns to the game.
+    const { error } = await getSb().auth.signInWithOAuth({
+      provider:'google',
+      options:{ redirectTo: window.location.origin + window.location.pathname }
+    });
+    if(error) authShowError('تعذّر فتح دخول قوقل — تأكد إن المزوّد مفعّل في Supabase');
+  }catch(e){
+    authShowError('تعذّر فتح دخول قوقل');
+  }
+}
+
+// supabase-js consumes the OAuth fragment during createClient(), so by the time
+// this runs the session already exists (or doesn't).
+async function checkGoogleReturn(){
+  try{
+    const { data } = await getSb().auth.getSession();
+    if(!data || !data.session) return;
+    if(getCurrentUser()) return;   // already signed in locally — leave it alone
+    await runGoogleBootstrap(null);
+  }catch(e){}
+}
+
+async function runGoogleBootstrap(username){
+  try{
+    const { data, error } = await getSb().rpc('google_bootstrap', username ? { p_username: username } : {});
+    if(error) return authShowError('فشل الاتصال بالسيرفر');
+
+    if(data && data.success){
+      closePickUser();
+      saveCurrentUser(data.user);
+      if(data.created)      showModal('أهلاً بك','✓','تم إنشاء حسابك عبر قوقل');
+      else if(data.merged)  showModal('تم الربط','✓','ربطنا قوقل بحسابك الموجود');
+      afterAuth();
+      return;
+    }
+    if(data && data.needs_username) return openPickUser(data.email, data.suggested, data.message);
+    authShowError((data && data.message) || 'تعذّر إكمال الدخول بقوقل');
+  }catch(e){
+    authShowError('فشل الاتصال بالسيرفر');
+  }
+}
+
+function openPickUser(email, suggested, msg){
+  $('pickUserEmail').textContent = email || '—';
+  if(suggested && !$('pickUserInput').value) $('pickUserInput').value = suggested;
+  const err = $('pickUserError');
+  if(msg){ err.textContent = msg; err.classList.remove('hidden') } else err.classList.add('hidden');
+  $('pickUserModal').classList.add('show');
+}
+
+function closePickUser(){ $('pickUserModal').classList.remove('show') }
+
+async function cancelPickUser(){
+  closePickUser();
+  $('pickUserInput').value = '';
+  // A half-finished Google session would re-open this picker on every reload.
+  try{ await getSb().auth.signOut() }catch(e){}
+}
+
+async function submitPickUser(){
+  const u = $('pickUserInput').value.trim();
+  const err = $('pickUserError');
+  if(u.length < 3){ err.textContent = 'اسم المستخدم لازم ٣ حروف على الأقل'; err.classList.remove('hidden'); return }
+  await runGoogleBootstrap(u);
+}
+
+// ========= ADD EMAIL (pre-v4 accounts) =========
+let addEmailOnDone = null;
+
+function openAddEmail(onDone){
+  addEmailOnDone = onDone || null;
+  $('aeEmail').value = ''; $('aePass').value = '';
+  $('aeError').classList.add('hidden');
+  $('addEmailModal').classList.add('show');
+}
+
+function closeAddEmail(){
+  $('addEmailModal').classList.remove('show');
+  const cb = addEmailOnDone; addEmailOnDone = null;
+  if(cb) cb();
+}
+
+async function submitAddEmail(){
+  const mail = $('aeEmail').value.trim(), pass = $('aePass').value, err = $('aeError');
+  const fail = m => { err.textContent = m; err.classList.remove('hidden'); AudioEngine.play('error') };
+  if(!looksLikeEmail(mail)) return fail('❌ بريد إلكتروني غير صحيح');
+  if(!pass) return fail('❌ ادخل كلمة مرورك للتأكيد');
+
+  const name = getCurrentUsername();
+  if(!name) return fail('❌ ما فيه حساب مسجّل');
+
+  try{
+    const { data, error } = await getSb().rpc('set_my_email', { p_username: name, p_password: pass, p_email: mail });
+    if(error) return fail('❌ فشل الاتصال بالسيرفر');
+    if(!data || !data.success) return fail(data && data.message ? data.message : '❌ فشل الحفظ');
+    const u = getCurrentUser();
+    if(u){ u.email = data.email; saveCurrentUser(u) }
+    closeAddEmail();
+  }catch(e){
+    fail('❌ فشل الاتصال بالسيرفر');
+  }
+}
+
+checkGoogleReturn();
+
 function authLogout(){
   gameConfirm('متأكد تبي تسجل خروج؟', function(){
     localStorage.removeItem(LICENSE.currentKey);
+    // Without this the Google session survives logout and checkGoogleReturn()
+    // signs the same player straight back in on the next load.
+    try{ getSb().auth.signOut() }catch(e){}
+    sessionStorage.removeItem('emailPromptSeen');
     hideAllScreens();
     $('authScreen').classList.remove('hidden');
     authIsRegister=false;authToggleMode();authToggleMode();
@@ -190,9 +315,14 @@ function authToggleMode(){
   $('authSwitchText').textContent = authIsRegister ? 'عندك حساب؟' : 'ما عندك حساب؟';
   $('authSwitchBtn').textContent = authIsRegister ? 'تسجيل دخول' : 'إنشاء حساب جديد';
   $('authForgotRow').classList.toggle('hidden', authIsRegister);
+  $('authEmailRow').classList.toggle('hidden', !authIsRegister);
   $('authError').classList.add('hidden');
-  $('authUser').value='';$('authPass').value='';
+  $('authUser').value='';$('authPass').value='';$('authEmail').value='';
 }
+
+// Mirrors is_valid_email() in the database. The server check is the real gate;
+// this one just avoids a round-trip for an obvious typo.
+function looksLikeEmail(e){ return /^[^@\s]+@[^@\s.]+\.[^@\s]{2,}$/.test(String(e||'').trim()) }
 
 function authShowError(msg){$('authError').textContent=msg;$('authError').classList.remove('hidden');AudioEngine.play('error')}
 

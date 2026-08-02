@@ -875,6 +875,19 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 .history-footer button:hover { transform:translateY(-2px) }
 .history-footer button:active { transform:translateY(1px) }
 
+/* ===== GOOGLE SIGN-IN ===== */
+.auth-or { display:flex; align-items:center; gap:10px; margin:14px 0 12px; color:var(--text-soft); font-size:0.78rem }
+.auth-or::before, .auth-or::after { content:''; flex:1; height:1px; background:var(--border-light) }
+/* Google's brand guidelines want the mark on a neutral surface, so this button
+   deliberately sits outside the theme palette instead of using --accent. */
+.auth-btn-google {
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  background:#fff !important; color:#3c4043 !important;
+  border:2px solid #dadce0 !important; border-bottom:2px solid #dadce0 !important;
+}
+.auth-btn-google:hover { background:#f7f8f8 !important }
+.auth-btn-google svg { flex:none }
+
 /* ===== ACCOUNT RECOVERY ===== */
 .recovery-note { color:var(--text-mid); font-size:0.88rem; line-height:1.6; margin-bottom:14px }
 .recovery-note strong { color:var(--gold) }
