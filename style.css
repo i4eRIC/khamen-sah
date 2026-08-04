@@ -77,16 +77,18 @@
 }
 
 [data-theme="midnight"] {
-  --bg: #0a0e1a; --bg-card: #111827; --bg-card2: #1a2035;
-  --border: #374151; --border-light: #2a3446;
-  --text: #f1f5f9; --text-mid: #94a3b8; --text-soft: #64748b;
-  --accent: #e2e8f0; --accent-light: #f1f5f9; --accent-glow: rgba(226,232,240,0.14);
-  --gold: #fbbf24; --gold-dark: #d4991a; --gold-glow: rgba(251,191,36,0.25);
-  --green: #34d399; --green-bg: #0d2820; --green-border: #28a87a; --green-glow: rgba(52,211,153,0.2);
-  --red: #1e2636; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
-  --header-bg: #080b14; --slot-hover-num: #1e2a40;
-  --confetti1:#e2e8f0;--confetti2:#fbbf24;--confetti3:#38bdf8;--confetti4:#a78bfa;
-  --on-accent: #0a0e1a;
+  --bg: #0d132b; --bg-card: #14181f; --bg-card2: #1b2136;
+  --border: #374151; --border-light: #405477;
+  --text: #f1f5f9; --text-mid: #c4c4c4; --text-soft: #8892a8;
+  --accent: #ffffff; --accent-light: #f1f5f9; --accent-glow: rgba(255,255,255,0.22);
+  --gold: #be9627; --gold-dark: #8a6d1c; --gold-glow: rgba(190,150,39,0.25);
+  --green: #39ac82; --green-bg: #0d2820; --green-border: #28a87a; --green-glow: rgba(57,172,130,0.2);
+  --red: #2f4879; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
+  --header-bg: #03091c; --slot-hover-num: #455a82;
+  --confetti1:#ffffff;--confetti2:#be9627;--confetti3:#39ac82;--confetti4:#f1f5f9;
+  /* Dark, not white: --accent is pure white here, and --on-accent is the text
+     painted on top of it. White on white hid the award button entirely. */
+  --on-accent: #0d132b;
 }
 
 /* --accent here is deliberately a deep steel blue, not a light tint: it is painted
