@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!-- data-theme belongs on <html>, not <body>: custom properties inherit downward,
+     so a theme set on body leaves <html> on the default sand palette and its cream
+     background shows through wherever the content is shorter than the viewport. -->
+<html lang="ar" dir="rtl" data-theme="midnight">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -48,7 +51,7 @@
   .note{color:var(--text-soft);font-size:0.78rem;line-height:1.6;margin-top:10px}
 </style>
 </head>
-<body data-theme="midnight">
+<body>
 
 <!-- ===== LOGIN GATE ===== -->
 <div class="ad-page gate" id="gate">
