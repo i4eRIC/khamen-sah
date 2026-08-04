@@ -58,19 +58,6 @@
   --on-accent: #606c38;
 }
 
-[data-theme="royal"] {
-  --bg: #1a1030; --bg-card: #251848; --bg-card2: #2d1e55;
-  --border: #5a3d9e; --border-light: #4a3288;
-  --text: #eee5ff; --text-mid: #c4b0e8; --text-soft: #9880c8;
-  --accent: #a78bfa; --accent-light: #c4b0fa; --accent-glow: rgba(167,139,250,0.22);
-  --gold: #fbbf24; --gold-dark: #d4991a; --gold-glow: rgba(251,191,36,0.25);
-  --green: #34d399; --green-bg: #152e28; --green-border: #28a87a; --green-glow: rgba(52,211,153,0.2);
-  --red: #2a1b4a; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
-  --header-bg: #150c28; --slot-hover-num: #3a2570;
-  --confetti1:#a78bfa;--confetti2:#fbbf24;--confetti3:#f472b6;--confetti4:#818cf8;
-  --on-accent: #1c1040;
-}
-
 [data-theme="sunset"] {
   --bg: #2a1510; --bg-card: #3d1e18; --bg-card2: #48251e;
   --border: #8a4a35; --border-light: #723c2a;
@@ -84,24 +71,9 @@
   --on-accent: #2a1206;
 }
 
-[data-theme="midnight"] {
-  --bg: #0d132b; --bg-card: #14181f; --bg-card2: #1b2136;
-  --border: #374151; --border-light: #405477;
-  --text: #f1f5f9; --text-mid: #c4c4c4; --text-soft: #8892a8;
-  --accent: #ffffff; --accent-light: #f1f5f9; --accent-glow: rgba(255,255,255,0.22);
-  --gold: #be9627; --gold-dark: #8a6d1c; --gold-glow: rgba(190,150,39,0.25);
-  --green: #39ac82; --green-bg: #0d2820; --green-border: #28a87a; --green-glow: rgba(57,172,130,0.2);
-  --red: #2f4879; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
-  --header-bg: #03091c; --slot-hover-num: #455a82;
-  --confetti1:#ffffff;--confetti2:#be9627;--confetti3:#39ac82;--confetti4:#f1f5f9;
-  /* Dark, not white: --accent is pure white here, and --on-accent is the text
-     painted on top of it. White on white hid the award button entirely. */
-  --on-accent: #0d132b;
-}
-
 /* --accent here is deliberately a deep steel blue, not a light tint: it is painted
    behind the active team card, whose points sit on it in --gold. Anything lighter
-   drops that pair below 4.5:1 — the reason midnight needs its own overrides below. */
+   drops that pair below 4.5:1. */
 [data-theme="navy"] {
   --bg: #0d1526; --bg-card: #16203a; --bg-card2: #1d2b4d;
   --border: #2e4470; --border-light: #263a5f;
@@ -381,9 +353,8 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   background:var(--gold); flex-shrink:0;
 }
 /* --on-accent, not #fff. This bar is filled with --accent, and a hardcoded white
-   label only worked while every theme's accent happened to be dark. It sat at
-   1.13:1 on forest's cream, 2.26:1 on sunset, and 2.72:1 on royal — and 2.77:1
-   on midnight, whose bar is overridden to gold. Every theme now clears AA. */
+   label only worked while every theme's accent happened to be dark — it sat at
+   1.13:1 on forest's cream and 2.26:1 on sunset. Every theme now clears AA. */
 .flip-back .txt { flex:1; padding:0 16px; font-size:1.2rem; font-weight:700; display:flex; align-items:center; justify-content:center; text-align:center; color:var(--on-accent) }
 .flip-back .pts {
   min-width:68px; height:100%; display:flex; align-items:center; justify-content:center; padding:0 6px;
@@ -391,23 +362,6 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   background:transparent; flex-shrink:0;
   border-right:1.5px solid color-mix(in srgb, var(--gold) 45%, transparent);
 }
-/* midnight's --accent is a pale near-white tone (meant for buttons/highlights), which
-   turns the revealed-answer bar white and clashes with its white text. Swap it for gold
-   there specifically, and move the number badge to a dark chip so it still stands out. */
-[data-theme="midnight"] .flip-back { background:var(--gold); border-color:var(--gold-dark) }
-[data-theme="midnight"] .flip-back .num { background:var(--bg); color:var(--gold) }
-[data-theme="midnight"] .flip-back .pts { color:var(--bg); border-right-color:color-mix(in srgb, var(--bg) 45%, transparent) }
-/* Same near-white --accent shows up as a background on the two surfaces below.
-   Gold reads as "your turn" far better than a white slab, and ties them to the
-   revealed bars above. Text flips dark so it stays legible on gold. */
-[data-theme="midnight"] .team-card.playing {
-  background:var(--gold); border-color:var(--gold-dark);
-  box-shadow:0 12px 26px var(--gold-glow), inset 0 0 0 4px color-mix(in srgb, var(--bg) 22%, transparent);
-}
-[data-theme="midnight"] .team-card.playing .team-name { color:color-mix(in srgb, var(--bg) 72%, transparent) }
-[data-theme="midnight"] .team-card.playing .team-pts { color:var(--bg) }
-[data-theme="midnight"] .team-card.playing::before { background:var(--bg); color:var(--gold) }
-[data-theme="midnight"] .ctrl-next { background:var(--gold); border-bottom-color:var(--gold-dark) }
 
 /* ===== STRIKES ===== */
 .strikes-display { display:flex; justify-content:center; gap:14px; padding:10px 0 }

@@ -153,12 +153,12 @@ let rejoinDelay = 1000;
 /* ========== theme ========== */
 // Falls back to the phone's own light/dark preference until the host tells us
 // which theme it is using — better than being pinned to one palette at night.
-const THEME_IDS = ['sand','ocean','forest','royal','sunset','midnight','navy'];
+const THEME_IDS = ['sand','ocean','forest','sunset','navy'];
 function applyTheme(t){
   if(THEME_IDS.indexOf(t) === -1) return;
   document.documentElement.setAttribute('data-theme', t);
 }
-applyTheme(matchMedia('(prefers-color-scheme: dark)').matches ? 'midnight' : 'sand');
+applyTheme(matchMedia('(prefers-color-scheme: dark)').matches ? 'navy' : 'sand');
 
 /* ========== feedback ========== */
 // Vibration is the confirmation that matters on a phone: the player is looking

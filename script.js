@@ -1075,9 +1075,7 @@ const THEMES=[
   {id:'sand',     name:'رملي', swatch:'oklch(85% .05 85)'},
   {id:'ocean',    name:'بحري', swatch:'#1a3a5c'},
   {id:'forest',   name:'غابة', swatch:'#1a3c2a'},
-  {id:'royal',    name:'ملكي', swatch:'#2d1b4e'},
   {id:'sunset',   name:'غروب', swatch:'#5c2a1a'},
-  {id:'midnight', name:'ليلي', swatch:'#111827'},
   {id:'navy',     name:'كحلي', swatch:'#1c5882'},
 ];
 
