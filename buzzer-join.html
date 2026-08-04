@@ -8,7 +8,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>انضمام للبازر — خمّن صح</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Lalezar&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<!-- Absolute, not relative: this page is also served from /j/CODE, where a
+     relative "style.css" resolves to /j/style.css — which the /j/* rewrite
+     happily answers with this very HTML file, and the stylesheet never loads. -->
+<link rel="stylesheet" href="/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   /* No overflow:hidden here — on a short phone with the keyboard open the join
