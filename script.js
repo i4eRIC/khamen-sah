@@ -1321,7 +1321,18 @@ showModal('٣ أخطاء! ✕','','الدور ينتقل لـ '+otherName+stealM
 function resetStrikes(){G.strikes=0;for(let i=1;i<=3;i++)$('sx'+i).classList.remove('hit');AudioEngine.play('pop')}
 
 // ========= TEAM =========
-function setTeam(n){G.playing=n;$('ctrlT1').classList.toggle('active-team',n===1);$('ctrlT2').classList.toggle('active-team',n===2);updateUI();AudioEngine.play('switch',{pan:n===1?-0.5:0.5})}
+function setTeam(n){
+  // Strikes belong to the turn, not the question. Only loadQuestion and the
+  // 3-strike handover cleared them, so switching teams by hand (or a buzzer win)
+  // left the previous team's marks on screen — the incoming team started two
+  // down and a single wrong answer ended their turn.
+  if(n!==G.playing){G.strikes=0;for(let i=1;i<=3;i++)$('sx'+i).classList.remove('hit')}
+  G.playing=n;
+  $('ctrlT1').classList.toggle('active-team',n===1);
+  $('ctrlT2').classList.toggle('active-team',n===2);
+  updateUI();
+  AudioEngine.play('switch',{pan:n===1?-0.5:0.5});
+}
 
 // ========= AWARD & NEXT =========
 function revealAll(){const q=G.questions[G.qIndex];q.a.forEach((_,i)=>{if(!G.revealed.has(i)){G.revealed.add(i);$('sl'+i).classList.add('revealed')}})}
