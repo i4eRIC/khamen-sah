@@ -316,6 +316,10 @@ function authToggleMode(){
   $('authSwitchBtn').textContent = authIsRegister ? 'تسجيل دخول' : 'إنشاء حساب جديد';
   $('authForgotRow').classList.toggle('hidden', authIsRegister);
   $('authEmailRow').classList.toggle('hidden', !authIsRegister);
+  // Login accepts either identifier; registration is picking a username, so the
+  // same field means two different things depending on the mode.
+  $('authUserLabel').textContent = authIsRegister ? 'اسم المستخدم' : 'اسم المستخدم أو البريد';
+  $('authUser').placeholder      = authIsRegister ? 'اختر اسم مستخدم' : 'اسم المستخدم أو البريد';
   $('authError').classList.add('hidden');
   $('authUser').value='';$('authPass').value='';$('authEmail').value='';
 }
