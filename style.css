@@ -24,17 +24,21 @@
   --on-accent: #fbf3e6;
 }
 
+/* --accent sits in a narrow window here. It fills the active team's card, so it
+   has to separate from --bg-card2 (the inactive card) — but the team's points
+   are painted on it in --gold, which caps how light it can go. #1d5674 is the
+   only value in this family that clears both. */
 [data-theme="ocean"] {
-  --bg: #0f2942; --bg-card: #163757; --bg-card2: #1a4068;
-  --border: #2a5a8a; --border-light: #24507e;
-  --text: #e2eaf3; --text-mid: #a8c4df; --text-soft: #7a9bbd;
-  --accent: #38bdf8; --accent-light: #5ccbfa; --accent-glow: rgba(56,189,248,0.22);
+  --bg: #0f2942; --bg-card: #102c42; --bg-card2: #143543;
+  --border: #315e8c; --border-light: #24507e;
+  --text: #f2f6fa; --text-mid: #a9c3d8; --text-soft: #7d9cb8;
+  --accent: #1d5674; --accent-light: #3f87a6; --accent-glow: rgba(29,86,116,0.22);
   --gold: #fbbf24; --gold-dark: #d4991a; --gold-glow: rgba(251,191,36,0.25);
   --green: #34d399; --green-bg: #0d3d2e; --green-border: #28a87a; --green-glow: rgba(52,211,153,0.2);
   --red: #143a56; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
-  --header-bg: #0c2138; --slot-hover-num: #1e5580;
-  --confetti1:#38bdf8;--confetti2:#fbbf24;--confetti3:#34d399;--confetti4:#818cf8;
-  --on-accent: #04263b;
+  --header-bg: #0c2138; --slot-hover-num: #32678f;
+  --confetti1:#1d5674;--confetti2:#fbbf24;--confetti3:#34d399;--confetti4:#3f87a6;
+  --on-accent: #e0e0e0;
 }
 
 [data-theme="forest"] {
