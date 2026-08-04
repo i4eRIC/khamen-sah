@@ -115,8 +115,13 @@ let teamName = '';
 let unlocked = false;
 let hasBuzzedThisRound = false;
 
+// Two ways in: the long ?code= link, and the short /j/A1B2 one. The short link
+// is a Netlify rewrite, which keeps the browser URL as /j/A1B2 and therefore
+// leaves location.search empty -- so the code has to be read off the path too.
 const params = new URLSearchParams(location.search);
-if (params.get('code')) document.getElementById('codeInput').value = params.get('code');
+const fromPath = (location.pathname.match(/\/j\/([A-Za-z0-9]+)/i) || [])[1];
+const joinCode = params.get('code') || fromPath;
+if (joinCode) document.getElementById('codeInput').value = joinCode.toUpperCase();
 
 function joinRoom(){
   const code = document.getElementById('codeInput').value.trim();

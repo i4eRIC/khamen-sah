@@ -7,6 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Lalezar&family=Readex+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <!-- QR for the buzzer join link. Optional: if it fails to load, the link and
+       copy button still work — see renderBuzzerQR(). -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 </head>
 <body>
 
@@ -259,7 +262,14 @@
           <button class="ctrl-btn ctrl-award" id="createRoomBtn" onclick="createBuzzerRoom()"><svg class="icon"><use href="#i-plus"></use></svg> إنشاء غرفة</button>
           <div id="buzzerRoomInfo" class="hidden">
             <div class="buzzer-code" id="buzzerCodeDisplay">-----</div>
-            <div class="buzzer-hint">افتحوا هذا الرابط من جوالاتكم وادخلوا الكود:<br><span id="buzzerJoinUrl"></span></div>
+            <div class="buzzer-join">
+              <div class="buzzer-hint">امسحوا الباركود من جوالاتكم — أو افتحوا الرابط</div>
+              <div class="buzzer-qr" id="buzzerQR"></div>
+              <div class="buzzer-url-row">
+                <span id="buzzerJoinUrl" dir="ltr"></span>
+                <button class="ctrl-btn" id="buzzerCopyBtn" onclick="copyJoinUrl()" title="نسخ الرابط"><svg class="icon"><use href="#i-download"></use></svg> نسخ</button>
+              </div>
+            </div>
             <div class="buzzer-slots">
               <div class="buzzer-slot" id="buzzerSlot1"><span class="bs-label">الفريق ١</span><span class="bs-status" id="bs1status">⏳ بانتظار الانضمام</span></div>
               <div class="buzzer-slot" id="buzzerSlot2"><span class="bs-label">الفريق ٢</span><span class="bs-status" id="bs2status">⏳ بانتظار الانضمام</span></div>

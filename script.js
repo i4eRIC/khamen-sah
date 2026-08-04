@@ -850,6 +850,49 @@ function selectBuzzerMode(on){
 
 function genRoomCode(){ return String(Math.floor(10000 + Math.random()*90000)); }
 
+// SVG rather than canvas so the code stays crisp on a projector or TV, which is
+// where this actually gets pointed at. The library is a CDN script; if it didn't
+// load we hide the box instead of leaving an empty gap — the link still works.
+function renderBuzzerQR(url){
+  const box = $('buzzerQR');
+  if(!box) return;
+  if(typeof qrcode !== 'function'){ box.classList.add('hidden'); return }
+  try{
+    const qr = qrcode(0, 'M');       // 0 = pick the smallest version that fits
+    qr.addData(url);
+    qr.make();
+    box.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 2, scalable: true });
+    box.classList.remove('hidden');
+  }catch(e){
+    box.classList.add('hidden');
+  }
+}
+
+function copyJoinUrl(){
+  const url = $('buzzerJoinUrl').textContent;
+  const btn = $('buzzerCopyBtn');
+  if(!url) return;
+  const done = ()=>{
+    btn.innerHTML = iconSVG('check') + ' تم النسخ';
+    AudioEngine.play('pop');
+    setTimeout(()=>{ btn.innerHTML = iconSVG('download') + ' نسخ' }, 1800);
+  };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(url).then(done).catch(fallback);
+  } else fallback();
+
+  function fallback(){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove(); done();
+    }catch(e){
+      btn.innerHTML = iconSVG('warning') + ' انسخه يدوياً';
+    }
+  }
+}
+
 function createBuzzerRoom(){
   if (BUZZER.channel) return; // already created
   const code = genRoomCode();
@@ -857,7 +900,12 @@ function createBuzzerRoom(){
   BUZZER.slotNames = {1:null, 2:null};
 
   $('buzzerCodeDisplay').textContent = code;
-  $('buzzerJoinUrl').textContent = location.origin + '/buzzer-join.html?code=' + code;
+  // /j/CODE instead of /buzzer-join.html?code=CODE -- players read this off a
+  // screen and type it on a phone, so every character removed is one less typo.
+  // The _redirects file rewrites it back to the real page.
+  const joinUrl = location.origin + '/j/' + code;
+  $('buzzerJoinUrl').textContent = joinUrl;
+  renderBuzzerQR(joinUrl);
   $('createRoomBtn').classList.add('hidden');
   $('buzzerRoomInfo').classList.remove('hidden');
 
