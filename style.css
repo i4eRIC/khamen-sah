@@ -41,19 +41,20 @@
   --on-accent: #e0e0e0;
 }
 
-/* Owner's palette, applied verbatim by request. Measured but deliberately not
-   adjusted: the accent sits within 1.16:1 of the inactive card and the gold on
-   top of it reads at 2.98:1. Do not "fix" these on a later pass without asking. */
+/* Owner's palette, applied verbatim by request — do not "correct" it on a later
+   pass without asking. The cream accent now lifts the active team's card well
+   clear of the inactive one; the low pairs left are the gold on that cream
+   (3.83:1) and the header logo (2.20:1), both known and accepted. */
 [data-theme="forest"] {
   --bg: #2d380a; --bg-card: #505936; --bg-card2: #343f27;
   --border: #2a6b45; --border-light: #dda15e;
   --text: #f0f0f0; --text-mid: #d1d1d1; --text-soft: #ffffff;
-  --accent: #283618; --accent-light: #6ee7a0; --accent-glow: rgba(40,54,24,0.22);
+  --accent: #fdf0d5; --accent-light: #6ee7a0; --accent-glow: rgba(253,240,213,0.22);
   --gold: #8e773e; --gold-dark: #d4991a; --gold-glow: rgba(142,119,62,0.25);
   --green: #34d399; --green-bg: #0d3328; --green-border: #28a87a; --green-glow: rgba(52,211,153,0.2);
   --red: #143d28; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
   --header-bg: #2d380a; --slot-hover-num: #1a5030;
-  --confetti1:#283618;--confetti2:#8e773e;--confetti3:#34d399;--confetti4:#6ee7a0;
+  --confetti1:#fdf0d5;--confetti2:#8e773e;--confetti3:#34d399;--confetti4:#6ee7a0;
   --on-accent: #606c38;
 }
 
@@ -379,7 +380,11 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   font-family:'AA Galaxy','Lalezar',cursive; font-size:1.5rem; color:var(--accent);
   background:var(--gold); flex-shrink:0;
 }
-.flip-back .txt { flex:1; padding:0 16px; font-size:1.2rem; font-weight:700; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff }
+/* --on-accent, not #fff. This bar is filled with --accent, and a hardcoded white
+   label only worked while every theme's accent happened to be dark. It sat at
+   1.13:1 on forest's cream, 2.26:1 on sunset, and 2.72:1 on royal — and 2.77:1
+   on midnight, whose bar is overridden to gold. Every theme now clears AA. */
+.flip-back .txt { flex:1; padding:0 16px; font-size:1.2rem; font-weight:700; display:flex; align-items:center; justify-content:center; text-align:center; color:var(--on-accent) }
 .flip-back .pts {
   min-width:68px; height:100%; display:flex; align-items:center; justify-content:center; padding:0 6px;
   font-family:'AA Galaxy','Lalezar',cursive; font-size:1.3rem; color:var(--gold);
