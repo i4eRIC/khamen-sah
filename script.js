@@ -1462,6 +1462,16 @@ function scrollToSection(id){const el=document.getElementById(id);if(el)el.scrol
 function toggleNav(){$('navMobile').classList.toggle('hidden')}
 
 // ========= POWER-UP TOOLS =========
+// Arabic counted nouns take four forms, not two: 1 is singular, 2 has its own
+// dual, 3-10 take the plural, and 11 upward returns to the singular. Writing
+// "2 كلمات" or "9 حرف" reads as broken Arabic, so every count goes through here.
+function arCount(n, one, two, few, many){
+  if (n === 1) return one;
+  if (n === 2) return two;
+  if (n >= 3 && n <= 10) return n + ' ' + few;
+  return n + ' ' + many;
+}
+
 function useTool(type) {
   const q = G.questions[G.qIndex];
   // Check if all answers already revealed
@@ -1517,11 +1527,16 @@ function useTool(type) {
     const lastWord = cleanWords[cleanWords.length-1];
     const lastReal = lastWord.charAt(lastWord.length - 1);
     const charCount = ans.t.replace(/\s/g,'').length;
+    // "أول كلمة «ت...»" was ambiguous — it read as if the whole word were being
+    // shown truncated. Naming the letter outright is what a host says out loud.
+    const charsTxt = arCount(charCount, 'حرف واحد', 'حرفين', 'حروف', 'حرفاً');
     let hint = '';
     if (words.length === 1) {
-      hint = 'كلمة وحدة من ' + charCount + ' حروف، تبدأ بـ «' + firstReal + '» وتنتهي بـ «' + lastReal + '»';
+      hint = 'إجابة من ' + charsTxt + ' — أول حرف «' + firstReal + '» وآخر حرف «' + lastReal + '»';
     } else {
-      hint = words.length + ' كلمات، أول كلمة «' + firstReal + '...» وآخر كلمة «...' + lastReal + '»، المجموع ' + charCount + ' حرف';
+      const wordsTxt = arCount(words.length, 'كلمة واحدة', 'كلمتين', 'كلمات', 'كلمة');
+      hint = 'إجابة من ' + wordsTxt + ' (' + charsTxt + ') — أول حرف من الكلمة الأولى «'
+           + firstReal + '» وآخر حرف من الكلمة الأخيرة «' + lastReal + '»';
     }
     AudioEngine.play('reveal');
     showModal('\ud83c\udfaf \u062a\u0644\u0645\u064a\u062d!', '', hint);
