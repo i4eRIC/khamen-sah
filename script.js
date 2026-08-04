@@ -936,6 +936,10 @@ function createBuzzerRoom(){
     });
     BUZZER.connectedNames = joinedNames;
     updateBuzzerSlotUI();
+    // A phone that just joined has no idea which theme the host is playing in.
+    // Presence sync is the one event that fires on every join, so it doubles as
+    // the moment to tell them.
+    broadcastTheme();
   });
 
   channel.on('broadcast', { event: 'buzz' }, (payload) => {
@@ -1091,7 +1095,14 @@ function markActiveTheme(){
   document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.theme===SETTINGS.theme));
 }
 
-function selectTheme(t){SETTINGS.theme=t;document.body.setAttribute('data-theme',t);markActiveTheme();AudioEngine.play('pop')}
+function selectTheme(t){SETTINGS.theme=t;document.body.setAttribute('data-theme',t);markActiveTheme();broadcastTheme();AudioEngine.play('pop')}
+
+// Players' phones mirror the host's theme, so the room looks like one product
+// across every screen. Silent no-op when no buzzer room is open.
+function broadcastTheme(){
+  if(!BUZZER.channel) return;
+  try{ BUZZER.channel.send({ type:'broadcast', event:'theme', payload:{ theme: SETTINGS.theme } }) }catch(e){}
+}
 renderThemePickers();
 function selectTV(on){SETTINGS.tvMode=on;$('tvOff').classList.toggle('active',!on);$('tvOn').classList.toggle('active',on);document.body.classList.toggle('tv-mode',on);AudioEngine.play('click')}
 function selectMode(m){
