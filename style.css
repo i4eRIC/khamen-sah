@@ -1461,6 +1461,10 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 :root {
   --neutral-edge: color-mix(in srgb, var(--border) 78%, #6b5a38);
 }
+/* forest takes its button edges in the theme's cream instead. This has to sit
+   after the :root rule above, not inside the theme block: both selectors match
+   <html> with identical specificity, so source order is what decides. */
+[data-theme="forest"] { --neutral-edge: #fdf0d5 }
 
 /* --- neutral group (cream/outline buttons) --- */
 .setup-editor-btn,
