@@ -50,7 +50,7 @@
    (3.83:1) and the header logo (2.20:1), both known and accepted. */
 [data-theme="forest"] {
   --bg: #2d380a; --bg-card: #505936; --bg-card2: #343f27;
-  --border: #2a6b45; --border-light: #dda15e;
+  --border: #2a6b45; --border-light: #fdf0d5;
   --text: #f0f0f0; --text-mid: #d1d1d1; --text-soft: #ffffff;
   --accent: #fdf0d5; --accent-light: #6ee7a0; --accent-glow: rgba(253,240,213,0.22);
   --gold: #8e773e; --gold-dark: #d4991a; --gold-glow: rgba(142,119,62,0.25);
