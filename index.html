@@ -6,6 +6,14 @@
   <title>خمّن صح</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Lalezar&family=Readex+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Applied before the first paint, which is the whole point of it being inline
+       and up here: script.js runs at the end of <body>, so a saved dark theme
+       would flash the light default first. Not validated here to avoid pinning a
+       second copy of the theme list — script.js checks it and cleans up. -->
+  <script>
+    try{ var t = localStorage.getItem('khamen_theme');
+         if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- QR for the buzzer join link. Optional: if it fails to load, the link and
        copy button still work — see renderBuzzerQR(). -->

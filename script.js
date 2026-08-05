@@ -1079,6 +1079,19 @@ const THEMES=[
   {id:'navy',     name:'كحلي', swatch:'#1c5882'},
 ];
 
+const THEME_KEY = 'khamen_theme';
+
+// The inline script in <head> has already put the saved theme on <html>. Read it
+// back so SETTINGS and the picker agree with what is on screen, and drop it if
+// it names a theme that no longer exists — a stale id would otherwise leave the
+// attribute set to something no rule matches.
+(function(){
+  const t = document.documentElement.getAttribute('data-theme');
+  if(t && THEMES.some(x => x.id === t)){ SETTINGS.theme = t; return }
+  document.documentElement.setAttribute('data-theme', SETTINGS.theme);
+  if(t){ try{ localStorage.removeItem(THEME_KEY) }catch(e){} }
+})();
+
 function renderThemePickers(){
   const html=THEMES.map(t=>
     '<button class="theme-dot" data-theme="'+t.id+'" onclick="selectTheme(\''+t.id+'\')" title="'+t.name+'">'+
@@ -1093,7 +1106,15 @@ function markActiveTheme(){
   document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.theme===SETTINGS.theme));
 }
 
-function selectTheme(t){SETTINGS.theme=t;document.body.setAttribute('data-theme',t);markActiveTheme();broadcastTheme();AudioEngine.play('pop')}
+// data-theme goes on <html>, matching where the head script sets it and where
+// the other two pages carry it. Persisted so a player who picks the dark theme
+// once isn't met by the light one on every load.
+function selectTheme(t){
+  SETTINGS.theme=t;
+  document.documentElement.setAttribute('data-theme',t);
+  try{ localStorage.setItem(THEME_KEY,t) }catch(e){}
+  markActiveTheme(); broadcastTheme(); AudioEngine.play('pop');
+}
 
 // Players' phones mirror the host's theme, so the room looks like one product
 // across every screen. Silent no-op when no buzzer room is open.
@@ -1597,7 +1618,6 @@ if(!$('introScreen').classList.contains('hidden')&&(e.key==='Enter'||e.key===' '
 if(e.key==='Enter'&&!$('gateScreen').classList.contains('hidden'))gateActivate();
 });
 
-document.body.setAttribute('data-theme','sand');
 try { $('volSlider').value = SETTINGS.volume * 100; } catch(e) {}
 updateNavKey();
 

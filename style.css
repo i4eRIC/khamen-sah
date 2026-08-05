@@ -11,16 +11,19 @@
 /* =========================================================================
    THEMES  (editorial palette — flat surfaces, hairline borders)
    ========================================================================= */
+/* The :root half is not decoration: <body> carries no data-theme until script.js
+   runs, and the stylesheet paints before that. Drop it and every load flashes
+   with no palette at all. Colours below are the owner's, applied verbatim. */
 :root, [data-theme="sand"] {
-  --bg: #ece0cf; --bg-card: #fbf6ec; --bg-card2: #f4ebd8;
+  --bg: #ead3a4; --bg-card: #f0daad; --bg-card2: #f4ebd8;
   --border: #d3c3a0; --border-light: #e0d3b8;
   --text: #3a2a1a; --text-mid: #6a5237; --text-soft: #8a7256;
-  --accent: #7a3f1c; --accent-light: #92502a; --accent-glow: rgba(122,63,28,0.15);
-  --gold: #eab543; --gold-dark: #c9922f; --gold-glow: rgba(234,181,67,0.28);
-  --green: #7a3f1c; --green-bg: #7a3f1c; --green-border: #eab543; --green-glow: rgba(122,63,28,0.18);
+  --accent: #7a3f1c; --accent-light: #92502a; --accent-glow: rgba(122,63,28,0.22);
+  --gold: #eab543; --gold-dark: #c9922f; --gold-glow: rgba(234,181,67,0.25);
+  --green: #7a3f1c; --green-bg: #7a3f1c; --green-border: #eab543; --green-glow: rgba(122,63,28,0.2);
   --red: #7a3f1c; --red-bg: #ece0cf; --red-border: #b78a55; --red-glow: rgba(122,63,28,0.2);
   --header-bg: #5c2f14; --slot-hover-num: #f0e4cf;
-  --confetti1:#c2956a;--confetti2:#eab543;--confetti3:#d4a373;--confetti4:#8b5e3c;
+  --confetti1:#7a3f1c;--confetti2:#eab543;--confetti3:#7a3f1c;--confetti4:#92502a;
   --on-accent: #fbf3e6;
 }
 
