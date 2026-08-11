@@ -814,9 +814,36 @@ try {
 nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
 
 // ========= QUESTIONS FROM SUPABASE (best-effort — falls back to the built-in set) =========
+const Q_CACHE_KEY = 'khamen_q_cache';
+const Q_CACHE_AT  = 'khamen_q_cache_at';
+const Q_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+function applyQuestions(list){
+  ALL_Q = list;
+  nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
+}
+
+// The whole question bank used to come down the wire on every single load —
+// roughly 130 KB a time, and the single largest draw on the database's monthly
+// bandwidth. It is now cached for a day, and the two cases where the download
+// was pure waste are cut out entirely.
 async function loadQuestionsFromSupabase(){
+  // A player who has edited questions locally always kept their own set; the
+  // fetched rows were parsed and then thrown away. Leave before paying for them.
+  try{ if(localStorage.getItem('khamen_questions')) return }catch(e){}
+
   try{
-    const { data, error } = await getSb().from('questions').select('*');
+    const at = Number(localStorage.getItem(Q_CACHE_AT) || 0);
+    if(Date.now() - at < Q_CACHE_TTL){
+      const cached = JSON.parse(localStorage.getItem(Q_CACHE_KEY) || 'null');
+      if(Array.isArray(cached) && cached.length){ applyQuestions(cached); return }
+    }
+  }catch(e){ /* unreadable cache — fall through and fetch */ }
+
+  try{
+    // Only the three columns the game reads. select('*') also carried category
+    // and created_at down on every load, neither of which is ever looked at.
+    const { data, error } = await getSb().from('questions').select('id,question,answers');
     if(error || !Array.isArray(data) || data.length === 0) return;
     const parsed = data.map(row => {
       let answers = row.answers;
@@ -827,12 +854,14 @@ async function loadQuestionsFromSupabase(){
       return { id: row.id, q: row.question, a: answers };
     }).filter(Boolean);
     if(parsed.length === 0) return;
-    // don't clobber the player's own local edits made through the question editor
-    const hasLocalEdits = !!localStorage.getItem('khamen_questions');
-    if(!hasLocalEdits){
-      ALL_Q = parsed;
-      nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
-    }
+
+    applyQuestions(parsed);
+    // Failure here is not worth surfacing: a full storage quota just means the
+    // next load fetches again, which is the old behaviour.
+    try{
+      localStorage.setItem(Q_CACHE_KEY, JSON.stringify(parsed));
+      localStorage.setItem(Q_CACHE_AT, String(Date.now()));
+    }catch(e){}
   }catch(e){ /* keep the built-in question set */ }
 }
 loadQuestionsFromSupabase();
