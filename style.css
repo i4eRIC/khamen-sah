@@ -15,7 +15,7 @@
    runs, and the stylesheet paints before that. Drop it and every load flashes
    with no palette at all. Colours below are the owner's, applied verbatim. */
 :root, [data-theme="sand"] {
-  --bg: #ead3a4; --bg-card: #f0daad; --bg-card2: #f4ebd8;
+  --bg: #efe0c2; --bg-card: #f2dfba; --bg-card2: #f4ebd8;
   --border: #d3c3a0; --border-light: #e0d3b8;
   --text: #3a2a1a; --text-mid: #6a5237; --text-soft: #8a7256;
   --accent: #7a3f1c; --accent-light: #92502a; --accent-glow: rgba(122,63,28,0.22);
