@@ -142,13 +142,9 @@ button:focus-visible, a:focus-visible, input:focus-visible,
     radial-gradient(ellipse 85% 45% at 50% -8%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 68%),
     var(--bg);
 }
-.bg::before {
-  content:''; position:absolute; inset:0; opacity:1;
-  background-image:radial-gradient(color-mix(in srgb, var(--text) 12%, transparent) 1.7px, transparent 2px);
-  background-size:22px 22px;
-  -webkit-mask:none;
-  mask:none;
-}
+/* The dot grid that used to sit here is gone: a flat surface reads as calmer,
+   and it stops the 22px lattice from fighting the text on the landing page. The
+   soft glow above is what carries the depth now. */
 
 .app { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column }
 
