@@ -1653,4 +1653,7 @@ updateNavKey();
     }, {threshold:[0,0.25,0.5,0.75,1]});
     sections.forEach(s=>io2.observe(s));
   }
+
+  const yearEl = document.getElementById('footerYear');
+  if(yearEl) yearEl.textContent = new Date().getFullYear();
 })();
