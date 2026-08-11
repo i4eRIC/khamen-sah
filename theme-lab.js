@@ -14,8 +14,10 @@
 (() => {
   document.getElementById('themeLab')?.remove();
 
-  // The game sets data-theme on <body>, so inline overrides must land there too.
-  const HOST = document.body;
+  // The game sets data-theme on <html>, so both the theme read and the inline
+  // overrides must land there — on <body> the exported block would always be
+  // labelled with the default theme.
+  const HOST = document.documentElement;
   const cs   = () => getComputedStyle(HOST);
   const cur  = () => HOST.getAttribute('data-theme') || 'sand';
 
