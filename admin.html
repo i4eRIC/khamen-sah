@@ -20,9 +20,10 @@
   .ad-card h2{font-family:'AA Galaxy','Tajawal',sans-serif;font-size:1.1rem;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:7px}
   .ad-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .ad-row input{flex:1;min-width:180px}
-  input{background:var(--bg-card2);border:2px solid var(--border-light);border-radius:var(--r-sm);
+  input,select{background:var(--bg-card2);border:2px solid var(--border-light);border-radius:var(--r-sm);
         color:var(--text);padding:10px 13px;font-family:'Tajawal',sans-serif;font-size:0.95rem;width:100%}
-  input:focus{outline:none;border-color:var(--gold)}
+  input:focus,select:focus{outline:none;border-color:var(--gold)}
+  select{cursor:pointer;max-width:200px}
   button{font-family:'AA Galaxy','Tajawal',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;
          padding:10px 18px;border-radius:var(--r-sm);border:2px solid var(--border-light);
          background:var(--bg-card2);color:var(--text-mid);transition:all .2s var(--ease)}
@@ -81,6 +82,39 @@
   <div class="ad-card">
     <h2>نظرة عامة</h2>
     <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="ad-card">
+    <h2>توليد أكواد</h2>
+    <div class="ad-row">
+      <input type="number" id="genCount" value="500" min="1" max="10000" style="max-width:130px">
+      <input type="text" id="genBatch" placeholder="اسم الدفعة (اختياري)">
+      <button class="primary" onclick="genCodes()">ولّد</button>
+    </div>
+    <div class="msg hidden" id="genMsg"></div>
+    <p class="note">
+      التوليد يصير داخل قاعدة البيانات ويُضاف للموجود — ما يمس أي كود قديم.
+      بعد النجاح ينزل ملف نصي بالدفعة الجديدة تلقائياً. لو ضاع منك، صدّره من الأسفل.
+    </p>
+  </div>
+
+  <div class="ad-card">
+    <h2>تصدير الأكواد</h2>
+    <div class="ad-row">
+      <select id="expScope">
+        <option value="free">المتاحة فقط</option>
+        <option value="all">الكل</option>
+        <option value="used">المستخدمة فقط</option>
+      </select>
+      <select id="expBatch"><option value="">كل الدفعات</option></select>
+      <button class="primary" onclick="exportCodes()">تنزيل</button>
+      <button onclick="loadBatches()">تحديث الدفعات</button>
+    </div>
+    <div class="msg hidden" id="expMsg"></div>
+    <div class="scroll"><table id="batchTbl" class="hidden">
+      <thead><tr><th>الدفعة</th><th>الإجمالي</th><th>المتاحة</th><th>أول توليد</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
   </div>
 
   <div class="ad-card">
@@ -146,6 +180,7 @@ async function unlock(){
   $('panel').classList.remove('hidden');
   paintOverview(data);
   loadAttempts();
+  loadBatches();
 }
 
 function lock(){
@@ -208,6 +243,81 @@ async function resetUser(){
   const { data } = await sb.rpc('admin_reset_user_password', { p_pass: PASS, p_username: u, p_new_password: p });
   show(msg, (data && data.message) || 'فشل', !!(data && data.success));
   if(data && data.success){ $('ruUser').value=''; $('ruPass').value=''; }
+}
+
+// ===== الأكواد: توليد وتصدير =====
+
+// الأكواد تنزل كملف بدل ما تنعرض في الصفحة: قائمة بآلاف الأكواد على الشاشة
+// ما تنفع للتوزيع، والتنزيل يخليها عندك مباشرة بلا نسخ يدوي.
+function downloadText(name, text){
+  const url = URL.createObjectURL(new Blob([text], {type:'text/plain;charset=utf-8'}));
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function stamp(){
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes());
+}
+
+async function genCodes(){
+  const n = parseInt($('genCount').value, 10);
+  const batch = $('genBatch').value.trim();
+  const msg = $('genMsg');
+  msg.classList.remove('hidden');
+
+  if(!Number.isInteger(n) || n < 1 || n > 10000) return show(msg, 'العدد لازم بين ١ و ١٠٠٠٠', false);
+  if(!confirm('توليد ' + n + ' كود جديد؟ الأكواد القديمة ما تتأثر.')) { msg.classList.add('hidden'); return; }
+
+  show(msg, 'جاري التوليد…', true);
+  const { data, error } = await sb.rpc('admin_generate_codes', { p_pass: PASS, p_count: n, p_batch: batch || null });
+  if(error || !data || !data.success) return show(msg, (data && data.message) || 'فشل التوليد', false);
+
+  downloadText('codes_' + data.batch + '.txt', data.codes.join('\n') + '\n');
+  show(msg, data.message + ' — الدفعة: ' + data.batch + ' (نزل الملف)', true);
+  $('genBatch').value = '';
+  loadOverview();
+  loadBatches();
+}
+
+async function loadBatches(){
+  const { data } = await sb.rpc('admin_list_batches', { p_pass: PASS });
+  const tbl = $('batchTbl'), sel = $('expBatch');
+  if(!data || !data.success || !data.rows.length){ tbl.classList.add('hidden'); return; }
+
+  // "(قبل الترحيل)" تمثّل batch = null، وما تصلح كقيمة فلترة — تُعرض ولا تُختار.
+  const named = data.rows.filter(r => r.batch !== '(قبل الترحيل)');
+  sel.innerHTML = '<option value="">كل الدفعات</option>' +
+    named.map(r => `<option value="${esc(r.batch)}">${esc(r.batch)} (${r.total})</option>`).join('');
+
+  tbl.classList.remove('hidden');
+  tbl.querySelector('tbody').innerHTML = data.rows.map(r => `
+    <tr>
+      <td><span class="mono">${esc(r.batch)}</span></td>
+      <td>${r.total}</td>
+      <td>${r.free}</td>
+      <td>${new Date(r.first_at).toLocaleDateString('ar-SA',{year:'numeric',month:'short',day:'numeric'})}</td>
+    </tr>`).join('');
+}
+
+async function exportCodes(){
+  const scope = $('expScope').value, batch = $('expBatch').value;
+  const msg = $('expMsg');
+  msg.classList.remove('hidden');
+  show(msg, 'جاري التصدير…', true);
+
+  const { data, error } = await sb.rpc('admin_export_codes', { p_pass: PASS, p_scope: scope, p_batch: batch || null });
+  if(error || !data || !data.success) return show(msg, (data && data.message) || 'فشل التصدير', false);
+  if(!data.count) return show(msg, 'ما فيه أكواد بهذا النطاق', false);
+
+  const label = { free:'المتاحة', all:'الكل', used:'المستخدمة' }[scope];
+  const head = '# خمّن صح — ' + label + (batch ? ' — دفعة ' + batch : '') +
+               '\n# ' + data.count + ' كود — صُدِّرت ' + stamp() + '\n\n';
+  downloadText('codes_export_' + scope + '_' + stamp() + '.txt',
+               head + data.rows.map(r => r.code).join('\n') + '\n');
+  show(msg, 'نزل ' + data.count + ' كود', true);
 }
 
 async function loadAttempts(){
