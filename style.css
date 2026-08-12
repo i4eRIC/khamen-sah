@@ -64,14 +64,14 @@
 [data-theme="sunset"] {
   --bg: #2a1510; --bg-card: #3d1e18; --bg-card2: #48251e;
   --border: #8a4a35; --border-light: #723c2a;
-  --text: #fce8e0; --text-mid: #e0b8a5; --text-soft: #c09080;
+  --text: #fce8e0; --text-mid: #e3e3e3; --text-soft: #ffffff;
   --accent: #fb923c; --accent-light: #fdba74; --accent-glow: rgba(251,146,60,0.22);
-  --gold: #fbbf24; --gold-dark: #d4991a; --gold-glow: rgba(251,191,36,0.25);
+  --gold: #602c1f; --gold-dark: #d4991a; --gold-glow: rgba(96,44,31,0.25);
   --green: #34d399; --green-bg: #1a3028; --green-border: #28a87a; --green-glow: rgba(52,211,153,0.2);
   --red: #4a2418; --red-bg: #0d2618; --red-border: #2a6b45; --red-glow: rgba(40,100,65,0.3);
   --header-bg: #23110c; --slot-hover-num: #5a3020;
-  --confetti1:#fb923c;--confetti2:#fbbf24;--confetti3:#f87171;--confetti4:#fdba74;
-  --on-accent: #2a1206;
+  --confetti1:#fb923c;--confetti2:#602c1f;--confetti3:#34d399;--confetti4:#fdba74;
+  --on-accent: #000000;
 }
 
 /* --accent here is deliberately a deep steel blue, not a light tint: it is painted
