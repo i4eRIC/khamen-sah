@@ -71,10 +71,18 @@
 <div class="app" id="introScreen">
   <div class="intro">
     <div class="intro-glow"></div>
-    <div class="intro-logo">
-      <div class="intro-line line1"></div>
-      <div class="intro-title">خمّن صح</div>
-      <div class="intro-line line2"></div>
+    <div class="intro-logo logo-arc">
+      <div class="logo-arc-seal">
+        <svg class="logo-arc-svg" viewBox="0 0 150 150" aria-hidden="true">
+          <circle class="logo-arc-track" cx="75" cy="75" r="68"></circle>
+          <circle class="logo-arc-sweep" cx="75" cy="75" r="68"></circle>
+        </svg>
+        <div class="logo-arc-disc"><svg class="icon"><use href="#i-check"></use></svg></div>
+      </div>
+      <div class="logo-arc-text">
+        <div class="logo-arc-name">خمّن صح</div>
+        <div class="logo-arc-rule"></div>
+      </div>
     </div>
     <div class="intro-tap">اضغط للمتابعة</div>
   </div>
@@ -406,8 +414,12 @@
     </div>
     <div class="led-timer hidden" id="timerWrap">
       <div class="led-label"><svg class="icon"><use href="#i-clock"></use></svg> الوقت</div>
-      <div class="led-display">
-        <span class="led-num" id="timerNum">60</span>
+      <div class="arc-timer">
+        <svg class="arc-timer-svg" viewBox="0 0 172 172" aria-hidden="true">
+          <circle class="arc-timer-track" cx="86" cy="86" r="72"></circle>
+          <circle class="arc-timer-sweep" id="timerArc" cx="86" cy="86" r="72"></circle>
+        </svg>
+        <span class="arc-timer-num" id="timerNum">60</span>
       </div>
       <button class="timer-ctrl-btn play" id="timerToggleBtn" onclick="toggleTimer()"><svg class="icon"><use href="#i-play"></use></svg> تشغيل</button>
     </div>

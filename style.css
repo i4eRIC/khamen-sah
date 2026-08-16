@@ -1529,3 +1529,95 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 /* hover lift stays subtle and doesn't fight the shadow */
 .ctrl-btn:hover, .opt-btn:hover, .nav-play:hover,
 .setup-go:hover, .tool-btn:hover { transform: translateY(-1px) }
+
+
+/* =========================================================================
+   ANIMATED LOGO — arc lockup (شعار القوس المتحرك)
+   قوس ذهبي يلف حول الميدالية، ثم ينبض القرص ويُرسم الصح، ثم يدخل الاسم.
+   يعتمد على @keyframes checkDraw المعرّف أعلاه في هذا الملف.
+   ========================================================================= */
+.logo-arc { display:flex; align-items:center; justify-content:center; gap:26px }
+.logo-arc-seal {
+  position:relative; width:164px; height:164px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.logo-arc-svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg) }
+.logo-arc-track { fill:none; stroke:color-mix(in srgb, var(--gold) 22%, transparent); stroke-width:5 }
+.logo-arc-sweep {
+  fill:none; stroke:var(--gold); stroke-width:5; stroke-linecap:round;
+  stroke-dasharray:428; stroke-dashoffset:428;
+  animation:checkDraw 0.72s cubic-bezier(.5,0,.3,1) forwards;
+}
+.logo-arc-disc {
+  width:116px; height:116px; border-radius:50%; background:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 26px rgba(0,0,0,0.2);
+  animation:arcPop 0.42s 0.6s cubic-bezier(.2,1.5,.4,1) both;
+}
+.logo-arc-disc .icon { width:58px; height:58px; color:var(--gold); stroke-width:2.4 }
+.logo-arc-disc .icon polyline {
+  stroke-dasharray:40; stroke-dashoffset:40;
+  animation:checkDraw 0.4s 0.82s cubic-bezier(.16,.84,.44,1) forwards;
+}
+.logo-arc-text {
+  display:flex; flex-direction:column; gap:12px;
+  animation:arcSlide 0.5s 0.78s cubic-bezier(.16,.84,.44,1) both;
+}
+.logo-arc-name {
+  font-family:'AA Galaxy','Lalezar',cursive; line-height:1;
+  font-size:clamp(3.2rem,9vw,5.5rem); color:var(--accent);
+}
+.logo-arc-rule { height:2px; background:linear-gradient(90deg,var(--gold),transparent) }
+.logo-arc.on-dark .logo-arc-name { color:var(--on-accent) }
+
+@keyframes arcPop   { 0%{opacity:0;transform:scale(.3)} 65%{opacity:1;transform:scale(1.14)} 100%{opacity:1;transform:scale(1)} }
+@keyframes arcSlide { 0%{opacity:0;transform:translateX(34px)} 100%{opacity:1;transform:translateX(0)} }
+
+@media (max-width:600px) {
+  .logo-arc { flex-direction:column; gap:18px }
+  .logo-arc-seal { width:124px; height:124px }
+  .logo-arc-disc { width:88px; height:88px }
+  .logo-arc-disc .icon { width:44px; height:44px }
+  .logo-arc-text { align-items:center; text-align:center }
+  .logo-arc-rule { width:220px }
+}
+
+/* تصحيحات تباين لكل ثيم — --gold في «غروب» بني غامق، و--accent في «محيط/كحلي»
+   أزرق داكن، فيتغيّر لون القوس والاسم في هذه الثيمات فقط. */
+[data-theme="sunset"] .logo-arc-sweep { stroke:var(--gold-dark) }
+[data-theme="sunset"] .logo-arc-track { stroke:color-mix(in srgb, var(--gold-dark) 22%, transparent) }
+[data-theme="sunset"] .logo-arc-rule  { background:linear-gradient(90deg,var(--gold-dark),transparent) }
+[data-theme="ocean"] .logo-arc-name,
+[data-theme="navy"]  .logo-arc-name { color:var(--text) }
+
+
+/* =========================================================================
+   ARC TIMER — بديل عدّاد الـ LED
+   إطار ذهبي يفرغ مع الوقت، وعند الصفر تصير الدائرة والرقم أحمر مع نبضة.
+   ========================================================================= */
+.arc-timer {
+  position:relative; width:132px; height:132px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.arc-timer-svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg) }
+.arc-timer-track { fill:none; stroke:color-mix(in srgb, var(--text) 14%, transparent); stroke-width:9 }
+.arc-timer-sweep {
+  fill:none; stroke:var(--gold); stroke-width:9; stroke-linecap:round;
+  stroke-dasharray:452.4; stroke-dashoffset:0;
+  transition:stroke-dashoffset 1s linear, stroke 0.3s;
+}
+.arc-timer-num {
+  font-family:'AA Galaxy','Lalezar',cursive; font-size:3.4rem; line-height:1;
+  color:var(--gold); font-variant-numeric:tabular-nums;
+}
+#timerWrap.time-up .arc-timer-sweep { stroke:var(--danger); stroke-dashoffset:0 !important }
+#timerWrap.time-up .arc-timer-track { stroke:color-mix(in srgb, var(--danger) 20%, transparent) }
+#timerWrap.time-up .arc-timer-num { color:var(--danger); animation:arcTimeUp 0.5s ease infinite }
+@keyframes arcTimeUp { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.95)} }
+
+body.tv-mode .arc-timer { width:176px; height:176px }
+body.tv-mode .arc-timer-num { font-size:4.6rem }
+@media (max-width:600px) {
+  .arc-timer { width:104px; height:104px }
+  .arc-timer-num { font-size:2.6rem }
+}

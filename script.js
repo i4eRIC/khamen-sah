@@ -1280,10 +1280,16 @@ function resetTimer(){clearInterval(G.timerInterval);G.timerRunning=false;if(SET
 function toggleTimer(){if(SETTINGS.timer<=0)return;AudioEngine.play('click');if(G.timerRunning)pauseTimer();else startTimer()}
 function startTimer(){if(SETTINGS.timer<=0||G.timerLeft<=0)return;G.timerRunning=true;updateTimerBtn();G.timerInterval=setInterval(()=>{G.timerLeft--;updateTimerDisplay();if(G.timerLeft<=5&&G.timerLeft>0)AudioEngine.play('tick');if(G.timerLeft<=0){clearInterval(G.timerInterval);G.timerRunning=false;updateTimerBtn();AudioEngine.play('timeup')}},1000)}
 function pauseTimer(){clearInterval(G.timerInterval);G.timerRunning=false;updateTimerBtn()}
-function updateTimerDisplay(){const pct=(G.timerLeft/SETTINGS.timer)*100;const el=$('timerNum');el.textContent=G.timerLeft;
-el.classList.remove('warn','danger');
-if(pct<=20)el.classList.add('danger');
-else if(pct<=40)el.classList.add('warn')}
+// Arc timer: the gold ring drains over the full duration and the whole dial turns
+// red only when it hits zero. 452.4 is the r=72 circumference the stylesheet's
+// stroke-dasharray is pinned to — change both together or the ring desyncs.
+function updateTimerDisplay(){
+  const total=SETTINGS.timer||1, left=Math.max(0,G.timerLeft);
+  const el=$('timerNum'), arc=$('timerArc'), wrap=$('timerWrap');
+  if(el){el.textContent=left;el.classList.remove('warn','danger')}
+  if(arc)arc.style.strokeDashoffset=String(452.4*(1-left/total));
+  if(wrap)wrap.classList.toggle('time-up',left<=0);
+}
 function updateTimerBtn(){const btn=$('timerToggleBtn');if(!btn)return;if(G.timerRunning){btn.innerHTML=iconSVG('pause')+' إيقاف';btn.className='timer-ctrl-btn pause'}else{btn.innerHTML=iconSVG('play')+' تشغيل';btn.className='timer-ctrl-btn play'}}
 function stopTimer(){clearInterval(G.timerInterval);G.timerRunning=false}
 
