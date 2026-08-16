@@ -3,7 +3,10 @@
 
 -- ⚠️ وضع الاستبدال: يمسح كل الأسئلة الحالية قبل الإدخال.
 --    لو تبي الإضافة فقط، أعد التوليد بدون --replace
-delete from public.questions;
+--
+-- truncate ... restart identity لا delete: الحذف يُبقي عدّاد المُعرِّفات على
+-- حاله، فتبدأ الأسئلة الجديدة من آخر رقم وصل إليه الجدول القديم بدل ١.
+truncate table public.questions restart identity;
 
 insert into public.questions (question, answers, category) values
   ($$اذكر شيء يستخدمه الناس كل يوم الصبح$$, $$[{"t":"فرشاة الأسنان","p":30},{"t":"الجوال","p":25},{"t":"الماء","p":18},{"t":"المنبه","p":12},{"t":"القهوة","p":10},{"t":"المرآة","p":5}]$$, $$عامة$$),
