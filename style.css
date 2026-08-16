@@ -169,7 +169,9 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   padding:12px 22px; background:var(--header-bg);
   border-bottom:2px solid var(--gold); gap:12px;
 }
-.header-logo { font-family:'AA Galaxy','Lalezar',cursive; font-size:1.7rem; color:var(--on-accent); flex-shrink:0; letter-spacing:.5px }
+/* أبيض ثابت لا --on-accent: شريط الرأس داكن في كل الثيمات الخمسة، بينما
+   --on-accent أسود في «غروب» وزيتوني في «غابة» فيختفي الاسم عليهما. */
+.header-logo { font-family:'AA Galaxy','Lalezar',cursive; font-size:1.7rem; color:#fff; flex-shrink:0; letter-spacing:.5px }
 .vol-wrap { display:flex; align-items:center; gap:6px; flex-shrink:0 }
 .header-btns { display:flex; align-items:center; gap:8px; flex-shrink:0 }
 .header-icon-btn {
@@ -1589,6 +1591,15 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 [data-theme="sunset"] .logo-arc-rule  { background:linear-gradient(90deg,var(--gold-dark),transparent) }
 [data-theme="ocean"] .logo-arc-name,
 [data-theme="navy"]  .logo-arc-name { color:var(--text) }
+
+/* ولنفس السبب يتبع المؤقت --gold-dark في «غروب»، وإلا صار الرقم والحلقة
+   بنيّاً شبه أسود على خلفية داكنة فلا يُقرأ. */
+[data-theme="sunset"] .arc-timer-sweep { stroke:var(--gold-dark) }
+[data-theme="sunset"] .arc-timer-num   { color:var(--gold-dark) }
+/* «غابة» ذهبه زيتوني باهت (تباين ٢٫٩ على الخلفية)، و--gold-dark أوضح منه
+   ويبقى أصفر — العدّاد القديم كان فوق صندوق داكن يخفي هذا الفرق. */
+[data-theme="forest"] .arc-timer-sweep { stroke:var(--gold-dark) }
+[data-theme="forest"] .arc-timer-num   { color:var(--gold-dark) }
 
 
 /* =========================================================================
