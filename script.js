@@ -1035,8 +1035,16 @@ const DEFAULT_Q = [
 let nextQId = DEFAULT_Q.length + 1;
 let ALL_Q = JSON.parse(JSON.stringify(DEFAULT_Q));
 
+// مفاتيح كاش السحابة تُعرَّف هنا لا مع دالة الجلب: فحص الإصدار تحتها يمسحها،
+// وهو يسبقها في التنفيذ فيقع في المنطقة الميتة لو بقيت في مكانها السابق.
+const Q_CACHE_KEY = 'khamen_q_cache';
+const Q_CACHE_AT  = 'khamen_q_cache_at';
+const Q_CACHE_TTL = 24 * 60 * 60 * 1000;
+
 // Load saved questions from localStorage (with version check)
-const Q_VERSION = 266;
+// الإصدار مشتق من حجم البنك: كان مثبتاً على ٢٦٦، فلما صار البنك ٥٠٠ بقي كل
+// لاعب فتح المحرر مرة واحدة على نسخته القديمة — المحرر واللعبة معاً.
+const Q_VERSION = DEFAULT_Q.length;
 try {
   const savedVer = localStorage.getItem('khamen_q_version');
   if (savedVer && parseInt(savedVer) === Q_VERSION) {
@@ -1044,16 +1052,16 @@ try {
     if (saved) ALL_Q = JSON.parse(saved);
   } else {
     localStorage.removeItem('khamen_questions');
+    // وكاش السحابة أيضاً: عمره يوم كامل، فبدونه يبقى اللاعب على البنك القديم
+    // ليوم بعد تحديث الجدول رغم أن نسخته المحلية مُسحت.
+    localStorage.removeItem(Q_CACHE_KEY);
+    localStorage.removeItem(Q_CACHE_AT);
     localStorage.setItem('khamen_q_version', Q_VERSION);
   }
 } catch(e) {}
 nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
 
 // ========= QUESTIONS FROM SUPABASE (best-effort — falls back to the built-in set) =========
-const Q_CACHE_KEY = 'khamen_q_cache';
-const Q_CACHE_AT  = 'khamen_q_cache_at';
-const Q_CACHE_TTL = 24 * 60 * 60 * 1000;
-
 function applyQuestions(list){
   ALL_Q = list;
   nextQId = ALL_Q.reduce((max, q) => Math.max(max, q.id || 0), 0) + 1;
