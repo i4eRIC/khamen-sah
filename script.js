@@ -1278,7 +1278,11 @@ updateUI();resetTimer()}
 // ========= TIMER =========
 function resetTimer(){clearInterval(G.timerInterval);G.timerRunning=false;if(SETTINGS.timer<=0)return;G.timerLeft=SETTINGS.timer;updateTimerDisplay();updateTimerBtn()}
 function toggleTimer(){if(SETTINGS.timer<=0)return;AudioEngine.play('click');if(G.timerRunning)pauseTimer();else startTimer()}
-function startTimer(){if(SETTINGS.timer<=0||G.timerLeft<=0)return;G.timerRunning=true;updateTimerBtn();G.timerInterval=setInterval(()=>{G.timerLeft--;updateTimerDisplay();if(G.timerLeft<=5&&G.timerLeft>0)AudioEngine.play('tick');if(G.timerLeft<=0){clearInterval(G.timerInterval);G.timerRunning=false;updateTimerBtn()}},1000)}
+// الوصول للصفر لا يعطّل الزر: الضغط على «تشغيل» بعده يعيد ملء الحلقة ويبدأ
+// العدّ من أول، لأن المقدم كثيراً ما يمدّد للفريق وقتاً إضافياً على نفس السؤال.
+function startTimer(){if(SETTINGS.timer<=0)return;
+if(G.timerLeft<=0){G.timerLeft=SETTINGS.timer;updateTimerDisplay()}
+G.timerRunning=true;updateTimerBtn();G.timerInterval=setInterval(()=>{G.timerLeft--;updateTimerDisplay();if(G.timerLeft<=5&&G.timerLeft>0)AudioEngine.play('tick');if(G.timerLeft<=0){clearInterval(G.timerInterval);G.timerRunning=false;updateTimerBtn()}},1000)}
 function pauseTimer(){clearInterval(G.timerInterval);G.timerRunning=false;updateTimerBtn()}
 // Arc timer: the gold ring drains over the full duration and the whole dial turns
 // red only when it hits zero. 452.4 is the r=72 circumference the stylesheet's
