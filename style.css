@@ -208,7 +208,8 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   background:var(--gold); border:2px solid var(--accent); cursor:pointer;
 }
 
-/* Timer - LED Digital Display */
+/* Timer — الغلاف والتسمية. القرص نفسه صار .arc-timer في آخر الملف،
+   وقواعد .led-display و.led-num حُذفت لأن العنصر لم يعد في الصفحة. */
 .led-timer { display:flex; flex-direction:column; align-items:center; gap:8px }
 .led-label {
   display:flex; align-items:center; gap:4px;
@@ -216,36 +217,6 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   color:var(--text-soft); text-transform:uppercase;
 }
 .led-label .icon { width:0.9em; height:0.9em }
-.led-display {
-  background:linear-gradient(160deg, #0b0f16, #171f2b);
-  border:2px solid color-mix(in srgb, var(--gold) 45%, #1a1f28);
-  border-radius:50%; width:104px; height:104px;
-  display:flex; align-items:center; justify-content:center; text-align:center;
-  box-shadow:
-    inset 0 2px 8px rgba(0,0,0,0.6),
-    0 8px 18px rgba(0,0,0,0.18),
-    0 0 0 6px color-mix(in srgb, var(--bg-card) 80%, transparent);
-  position:relative; overflow:hidden;
-}
-.led-display::after {
-  content:''; position:absolute; inset:9px; border-radius:50%;
-  border:1.5px dashed color-mix(in srgb, var(--gold) 40%, transparent); pointer-events:none;
-}
-.led-num {
-  font-family:'AA Galaxy','Lalezar','Tajawal',sans-serif;
-  font-size:2.5rem; font-weight:900;
-  color:var(--gold); letter-spacing:1px; line-height:1;
-  font-variant-numeric:tabular-nums;
-  text-shadow:0 0 12px var(--gold-glow), 0 0 26px var(--gold-glow);
-  position:relative; z-index:1;
-  transition:color 0.3s, text-shadow 0.3s;
-}
-.led-num.warn { color:#ffce54; text-shadow:0 0 12px rgba(255,206,84,0.55) }
-.led-num.danger {
-  color:#ff6b6b; text-shadow:0 0 12px rgba(255,107,107,0.6);
-  animation:ledPulse 0.5s ease infinite;
-}
-@keyframes ledPulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.6; transform:scale(0.96)} }
 .timer-ctrl-btn {
   display:inline-flex; align-items:center; gap:5px;
   padding:6px 18px; border-radius:20px; font-family:'AA Galaxy','Tajawal',sans-serif;
@@ -1179,8 +1150,6 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   .vol-slider { width:44px }
   .sound-toggle { padding:4px 8px; font-size:0.9rem }
   .buzz-banner { font-size:0.7rem; padding:6px 12px; border-radius:10px; gap:4px }
-  .led-display { width:80px; height:80px }
-  .led-num { font-size:1.9rem }
   .timer-ctrl-btn { font-size:0.65rem; padding:4px 12px }
 
   .scoreboard { gap:10px; padding:14px 12px 6px }
@@ -1238,61 +1207,6 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   .steps-list { grid-template-columns:1fr }
 }
 
-/* ===== LANDSCAPE MOBILE — fit everything on one screen ===== */
-@media(max-width:932px) and (orientation:landscape) {
-  .header { padding:4px 10px; gap:4px }
-  .header-logo { font-size:1rem }
-  .header-icon-btn { padding:3px 7px; font-size:0.75rem }
-  .sound-toggle { padding:3px 7px; font-size:0.75rem }
-  .vol-slider { width:30px; display:inline-block }
-
-  .scoreboard { padding:4px 10px 2px; gap:8px }
-  .team-card { padding:5px 14px; border-radius:12px; display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:8px }
-  .team-card.playing::before { display:none }
-  .team-name { font-size:0.7rem; margin-bottom:0 }
-  .team-pts { font-size:1.4rem }
-  .round-pts { display:none }
-
-  .question-bar { padding:6px 12px; margin:2px auto 0 }
-  .q-text { font-size:clamp(0.85rem,2.4vw,1.05rem) }
-  .q-badge { font-size:0.55rem; margin-top:2px }
-
-  .board { padding:4px 10px; gap:5px; grid-template-columns:1fr 1fr }
-  .flip-card { height:34px }
-  .flip-front, .flip-back { border-radius:8px }
-  .flip-front .num, .flip-back .num { width:28px; font-size:0.8rem }
-  .flip-back .pts { min-width:32px; font-size:0.7rem }
-  .flip-front .txt, .flip-back .txt { font-size:0.7rem; padding:0 5px }
-  .flip-front .dots { font-size:0.65rem; letter-spacing:2px }
-
-  .led-display { width:52px; height:52px }
-  .led-num { font-size:1.1rem }
-  .led-label { display:none }
-  .timer-ctrl-btn { font-size:0.55rem; padding:2px 8px }
-
-  .tools-bar { padding:2px 10px; gap:4px }
-  .tool-btn { font-size:0.6rem !important; padding:3px 8px !important }
-  .tool-cost { font-size:0.52rem; padding:0px 3px }
-
-  .strikes-display { padding:2px 0; gap:5px }
-  .strike-x { width:26px; height:26px; font-size:0.85rem; border-width:2px }
-
-  .controls-bar { padding:2px 10px 4px }
-  .controls-row { gap:5px }
-  .ctrl-btn { padding:4px 8px; font-size:0.6rem; border-radius:7px; gap:2px }
-
-  .solo-input-area { padding:3px 10px; gap:5px }
-  .solo-input-area input { padding:5px 10px; font-size:0.75rem }
-  .solo-score-bar { padding:3px 10px }
-  .solo-pts { font-size:1.4rem }
-
-  .modal-card { padding:16px 14px; border-radius:14px; max-width:70vw }
-  .modal-card h2 { font-size:1.1rem; margin-bottom:2px }
-  .modal-card .m-pts { font-size:1.7rem; margin:2px 0 }
-  .modal-card p { font-size:0.72rem; margin-bottom:8px }
-  .modal-card > button { padding:7px 18px; font-size:0.78rem }
-}
-
 /* ===== SHORT PORTRAIT PHONES ===== */
 @media(max-height:700px) and (orientation:portrait) {
   .scoreboard { padding:8px 12px 4px }
@@ -1300,30 +1214,11 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   .question-bar { padding:10px 14px }
   .q-badge { display:none }
   .flip-card { height:48px }
-  .led-display { width:74px; height:74px }
-  .led-num { font-size:1.7rem }
 }
 
-/* ===== SMALL LANDSCAPE (phones) — extra compact ===== */
-@media(max-height:420px) and (orientation:landscape) {
-  .board { grid-template-columns:1fr 1fr 1fr }
-  .flip-card { height:28px }
-  .flip-front .txt, .flip-back .txt { font-size:0.6rem }
-  .flip-front .num, .flip-back .num { width:22px; font-size:0.62rem }
-  .flip-back .pts { min-width:26px; font-size:0.58rem }
-  .team-pts { font-size:1.2rem }
-  .team-name { font-size:0.6rem }
-  .question-bar { padding:3px 10px }
-  .q-text { font-size:0.75rem }
-  .q-badge { display:none }
-  .tools-bar { display:none }
-  .led-display { width:44px; height:44px }
-  .led-num { font-size:0.9rem }
-  .controls-bar { padding:2px 8px 3px }
-  .ctrl-btn { padding:3px 7px; font-size:0.55rem }
-  .strike-x { width:22px; height:22px; font-size:0.75rem }
-  .strikes-display { gap:4px }
-}
+/* كتلتا الوضع الأفقي نُقلتا إلى ما بعد كتلة (min-width:641px) في آخر الملف:
+   خصوصيتهما متساوية معها، فبقاؤهما هنا كان يجعل الجوال الأفقي يأخذ مقاسات
+   اللابتوب لأن الأخيرة تفوز. لا تعيدهما إلى هنا. */
 
 /* =========================================================================
    DESKTOP LARGER FONTS
@@ -1339,8 +1234,6 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   .team-pts { font-size: 3.2rem }
   .ctrl-btn { font-size: 1.05rem; padding: 13px 24px }
   .header-logo { font-size: 1.9rem }
-  .led-display { width:118px; height:118px }
-  .led-num { font-size:3rem }
   .led-label { font-size:0.78rem }
   .timer-ctrl-btn { font-size: 0.9rem; padding: 7px 20px }
   .flip-card { height: 64px }
@@ -1394,6 +1287,79 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   .footer-text { font-size: 1.1rem }
 }
 
+/* ===== LANDSCAPE-MOBILE-BLOCKS-MOVED-BELOW ===== */
+@media(max-width:932px) and (orientation:landscape) {
+  .header { padding:4px 10px; gap:4px }
+  .header-logo { font-size:1rem }
+  .header-icon-btn { padding:3px 7px; font-size:0.75rem }
+  .sound-toggle { padding:3px 7px; font-size:0.75rem }
+  .vol-slider { width:30px; display:inline-block }
+
+  .scoreboard { padding:4px 10px 2px; gap:8px }
+  .team-card { padding:5px 14px; border-radius:12px; display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:8px }
+  .team-card.playing::before { display:none }
+  .team-name { font-size:0.7rem; margin-bottom:0 }
+  .team-pts { font-size:1.4rem }
+  .round-pts { display:none }
+
+  .question-bar { padding:4px 12px; margin:2px auto 0 }
+  .q-text { font-size:clamp(0.85rem,2.4vw,1.05rem) }
+  .q-badge { font-size:0.55rem; margin-top:2px }
+
+  .board { padding:4px 10px; gap:5px; grid-template-columns:1fr 1fr }
+  .flip-card { height:34px }
+  .flip-front, .flip-back { border-radius:8px }
+  .flip-front .num, .flip-back .num { width:28px; font-size:0.8rem }
+  .flip-back .pts { min-width:32px; font-size:0.7rem }
+  .flip-front .txt, .flip-back .txt { font-size:0.7rem; padding:0 5px }
+  .flip-front .dots { font-size:0.65rem; letter-spacing:2px }
+
+  .led-label { display:none }
+  .timer-ctrl-btn { font-size:0.55rem; padding:2px 8px }
+
+  .tools-bar { padding:2px 10px; gap:4px }
+  .tool-btn { font-size:0.6rem !important; padding:3px 8px !important }
+  .tool-cost { font-size:0.52rem; padding:0px 3px }
+
+  .strikes-display { padding:2px 0; gap:5px }
+  .strike-x { width:26px; height:26px; font-size:0.85rem; border-width:2px }
+
+  .controls-bar { padding:2px 10px 4px }
+  .controls-row { gap:5px }
+  .ctrl-btn { padding:4px 8px; font-size:0.6rem; border-radius:7px; gap:2px }
+
+  .solo-input-area { padding:3px 10px; gap:5px }
+  .solo-input-area input { padding:5px 10px; font-size:0.75rem }
+  .solo-score-bar { padding:3px 10px }
+  .solo-pts { font-size:1.4rem }
+
+  .modal-card { padding:16px 14px; border-radius:14px; max-width:70vw }
+  .modal-card h2 { font-size:1.1rem; margin-bottom:2px }
+  .modal-card .m-pts { font-size:1.7rem; margin:2px 0 }
+  .modal-card p { font-size:0.72rem; margin-bottom:8px }
+  .modal-card > button { padding:7px 18px; font-size:0.78rem }
+}
+
+/* ===== SMALL LANDSCAPE (phones) — extra compact ===== */
+@media(max-height:420px) and (orientation:landscape) {
+  .board { grid-template-columns:1fr 1fr 1fr }
+  .flip-card { height:28px }
+  .flip-front .txt, .flip-back .txt { font-size:0.6rem }
+  .flip-front .num, .flip-back .num { width:22px; font-size:0.62rem }
+  .flip-back .pts { min-width:26px; font-size:0.58rem }
+  .team-pts { font-size:1.2rem }
+  .team-name { font-size:0.6rem }
+  .question-bar { padding:3px 10px }
+  .q-text { font-size:0.75rem }
+  .q-badge { display:none }
+  .tools-bar { display:none }
+  .controls-bar { padding:2px 8px 3px }
+  .ctrl-btn { padding:3px 7px; font-size:0.55rem }
+  .strike-x { width:22px; height:22px; font-size:0.75rem }
+  .strikes-display { gap:4px }
+}
+
+
 /* =========================================================================
    LIVE TOUCHES  (reveal flash, timer pulse, round transition, logo, progress)
    ========================================================================= */
@@ -1405,15 +1371,7 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 }
 .flip-card.revealed .flip-back { animation: revealFlash 0.75s ease-out; }
 
-/* 3 — timer circle pulse in the danger zone (last ~20%) */
-@keyframes timerPulse {
-  0%,100% { transform: scale(1);   box-shadow: inset 0 2px 8px rgba(0,0,0,0.6), 0 0 0 0 rgba(229,62,62,0.5); }
-  50%     { transform: scale(0.94); box-shadow: inset 0 2px 8px rgba(0,0,0,0.6), 0 0 0 12px rgba(229,62,62,0); }
-}
-.led-display:has(.led-num.danger) {
-  border-color: var(--danger) !important;
-  animation: timerPulse 0.7s ease infinite;
-}
+/* 3 — نبضة الخطر القديمة حُذفت: القرص الجديد ينبض عبر arcTimeUp عند الصفر */
 
 /* 5 — animated hero logo: gentle pulse + check draws in */
 @keyframes logoBob { 0%,100% { transform: scale(1) } 50% { transform: scale(1.05) } }
@@ -1628,7 +1586,27 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 
 body.tv-mode .arc-timer { width:176px; height:176px }
 body.tv-mode .arc-timer-num { font-size:4.6rem }
-@media (max-width:600px) {
+
+/* سلّم مقاسات المؤقت. كله مجموع هنا وبهذا الترتيب لأن هذا آخر الملف:
+   كتل الوضع الأفقي تأتي أخيراً فتغلب مقاسات العرض عند تساوي الخصوصية.
+   القرص القديم كان يصغر عبر .led-display في كتل متفرقة، فبقي الجديد
+   بحجم واحد بين ٦٠١ و٩٣٢ بكسل بينما ينكمش كل ما حوله. */
+@media (max-width:640px) {
   .arc-timer { width:104px; height:104px }
   .arc-timer-num { font-size:2.6rem }
+}
+@media (max-height:700px) and (orientation:portrait) {
+  .arc-timer { width:88px; height:88px }
+  .arc-timer-num { font-size:2.2rem }
+}
+@media (max-width:932px) and (orientation:landscape) {
+  .arc-timer { width:62px; height:62px }
+  .arc-timer-svg circle { stroke-width:6 }
+  .arc-timer-num { font-size:1.5rem }
+  /* نقاط التقدم مُعرَّفة بعد كتلة الوضع الأفقي، فهامشها يُقلَّص من هنا */
+  .q-progress { margin-top:4px }
+}
+@media (max-height:420px) and (orientation:landscape) {
+  .arc-timer { width:50px; height:50px }
+  .arc-timer-num { font-size:1.2rem }
 }
