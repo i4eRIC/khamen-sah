@@ -421,7 +421,7 @@ function updateGateScreen(){
   const info=$('gateTrialInfo');
   const btn=$('gateTrialBtn');
   if(remaining>0){
-    info.textContent='🎁 متبقي '+remaining+' سؤال مجاني';
+    info.textContent='🎁 متبقي '+ar(remaining)+' سؤال مجاني';
     btn.disabled=false;btn.textContent='جرّب الآن! 🎮';
   } else {
     info.textContent='⚠️ انتهت التجربة المجانية';
@@ -1031,6 +1031,10 @@ function hideBuzzBanner(){
 
 let G = { t1:{name:'',score:0}, t2:{name:'',score:0}, playing:1, round:0, qIndex:0, qInRound:0, strikes:0, roundPts:{1:0,2:0}, revealed:new Set(), questions:[], timerInterval:null, timerLeft:0, timerRunning:false, soloScore:0, soloStrikes:0, stealMode:false, stealPts:0, stealFrom:'', shieldActive:false, toolsUsed:{letter:false,hint:false,shield:false}, stats:{roundScores:[],totalReveals:0,totalStrikes:0,bestRound:{team:'',pts:0},fastestReveal:null,roundStartTime:0} };
 const $=id=>document.getElementById(id);
+// أرقام عربية هندية للعرض فقط. لا تُستعمل مع كود غرفة البازر ولا مفتاح
+// التفعيل ولا حقول الإدخال: تلك تُقرأ أو تُكتب على لوحة مفاتيح لاتينية.
+const AR_DIGITS='٠١٢٣٤٥٦٧٨٩';
+const ar=v=>String(v==null?'':v).replace(/[0-9]/g,d=>AR_DIGITS[+d]);
 const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 
 // ========= AUDIO ENGINE =========
@@ -1193,15 +1197,15 @@ function renderEditorList(){
   $('editorEmpty').classList.toggle('hidden',items.length>0);
   items.forEach(({q,i})=>{
     const d=document.createElement('div');d.className='eq-item';
-    const idSpan=document.createElement('span');idSpan.className='eq-id';idSpan.textContent='#'+(q.id||'—');
+    const idSpan=document.createElement('span');idSpan.className='eq-id';idSpan.textContent='#'+ar(q.id||'—');
     const textSpan=document.createElement('span');textSpan.className='eq-text';textSpan.textContent=q.q;
-    const countSpan=document.createElement('span');countSpan.className='eq-count';countSpan.textContent=q.a.length+' إجابات';
+    const countSpan=document.createElement('span');countSpan.className='eq-count';countSpan.textContent=ar(q.a.length)+' إجابات';
     const editBtn=document.createElement('button');editBtn.className='eq-edit';editBtn.appendChild(iconEl('pencil'));editBtn.onclick=()=>editQ(i);
     const delBtn=document.createElement('button');delBtn.className='eq-del';delBtn.appendChild(iconEl('trash'));delBtn.onclick=()=>deleteQ(i);
     d.append(idSpan,textSpan,countSpan,editBtn,delBtn);
     list.appendChild(d);
   });
-  $('qCount').textContent=ALL_Q.length;
+  $('qCount').textContent=ar(ALL_Q.length);
 }
 function deleteQ(i){if(ALL_Q.length<=1)return showModal('⚠️','','لازم يكون فيه على الأقل سؤال واحد!');ALL_Q.splice(i,1);saveQuestions();renderEditorList()}
 function editQ(i){editingIndex=i;const q=ALL_Q[i];$('newQ').value=q.q;const rows=document.querySelectorAll('#newAnswers .ea-row');rows.forEach((row,j)=>{row.querySelector('.ea-ans').value=q.a[j]?q.a[j].t:'';row.querySelector('.ea-pts').value=q.a[j]?q.a[j].p:''});$('addQBtn').innerHTML=iconSVG('save')+' حفظ التعديل';$('newQ').scrollIntoView({behavior:'smooth'})}
@@ -1256,7 +1260,7 @@ G.questions=shuffle(ALL_Q).slice(0,totalNeeded);G.stats={roundScores:[],totalRev
 // Toggle solo/group mode on game screen
 $('gameScreen').classList.toggle('solo-mode',isSolo);
 if(!isSolo){$('tn1').textContent=G.t1.name;$('tn2').textContent=G.t2.name;$('ctrlTN1').textContent=G.t1.name;$('ctrlTN2').textContent=G.t2.name}
-else{$('soloName').textContent=G.t1.name;$('soloPts').textContent='0'}
+else{$('soloName').textContent=G.t1.name;$('soloPts').textContent=ar(0)}
 $('setupScreen').classList.add('hidden');$('gameScreen').classList.remove('hidden');$('goScreen').classList.add('hidden');
 if(SETTINGS.timer>0)$('timerWrap').classList.remove('hidden');else $('timerWrap').classList.add('hidden');
 $('buzzerUnlockBtn').classList.toggle('hidden', isSolo || !SETTINGS.buzzerMode);
@@ -1267,10 +1271,10 @@ loadQuestion()}
 function loadQuestion(){const q=G.questions[G.qIndex];G.strikes=0;G.soloStrikes=0;G.revealed=new Set();G.roundPts={1:0,2:0};G.stealMode=false;G.stealPts=0;G.stealFrom='';G.shieldActive=false;G.toolsUsed={letter:false,hint:false,shield:false};G.stats.roundStartTime=Date.now();
 // Reset tool button states
 document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('used'));
-$('qText').textContent=q.q;$('roundBadge').textContent='الجولة '+(G.round+1)+' — السؤال '+(G.qInRound+1)+' من '+Q_PER_ROUND+' (#'+(q.id||'')+')';
+$('qText').textContent=q.q;$('roundBadge').textContent='الجولة '+ar(G.round+1)+' — السؤال '+ar(G.qInRound+1)+' من '+ar(Q_PER_ROUND)+' (#'+ar(q.id||'')+')';
 renderProgress();
 for(let i=1;i<=3;i++){$('sx'+i).classList.remove('hit');if($('ssx'+i))$('ssx'+i).classList.remove('hit')}
-const board=$('board');board.innerHTML='';q.a.forEach((ans,i)=>{const d=document.createElement('div');d.className='flip-card';d.id='sl'+i;d.onclick=()=>revealAnswer(i);d.innerHTML='<div class="flip-inner"><div class="flip-front"><div class="num">'+(i+1)+'</div><div class="txt"><span class="dots">● ● ● ● ●</span></div></div><div class="flip-back"><div class="num">'+(i+1)+'</div><div class="txt">'+ans.t+'</div><div class="pts">'+ans.p+'</div></div></div>';board.appendChild(d)});
+const board=$('board');board.innerHTML='';q.a.forEach((ans,i)=>{const d=document.createElement('div');d.className='flip-card';d.id='sl'+i;d.onclick=()=>revealAnswer(i);d.innerHTML='<div class="flip-inner"><div class="flip-front"><div class="num">'+ar(i+1)+'</div><div class="txt"><span class="dots">● ● ● ● ●</span></div></div><div class="flip-back"><div class="num">'+ar(i+1)+'</div><div class="txt">'+ans.t+'</div><div class="pts">'+ar(ans.p)+'</div></div></div>';board.appendChild(d)});
 if(SETTINGS.mode==='solo'){const inp=$('soloGuess');if(inp){inp.value='';setTimeout(()=>inp.focus(),100)}}
 if(SETTINGS.buzzerMode){ hideBuzzBanner(); unlockGameBuzzer(); }
 updateUI();resetTimer()}
@@ -1290,7 +1294,7 @@ function pauseTimer(){clearInterval(G.timerInterval);G.timerRunning=false;update
 function updateTimerDisplay(){
   const total=SETTINGS.timer||1, left=Math.max(0,G.timerLeft);
   const el=$('timerNum'), arc=$('timerArc'), wrap=$('timerWrap');
-  if(el){el.textContent=left;el.classList.remove('warn','danger')}
+  if(el){el.textContent=ar(left);el.classList.remove('warn','danger')}
   if(arc)arc.style.strokeDashoffset=String(452.4*(1-left/total));
   if(wrap)wrap.classList.toggle('time-up',left<=0);
 }
@@ -1411,11 +1415,13 @@ if(G.qIndex<G.questions.length)loadQuestion();else endGame()}
 
 // ========= UI =========
 function updateUI(){
-if(SETTINGS.mode==='solo'){$('soloPts').textContent=G.soloScore}
-else{$('tp1').textContent=G.t1.score;$('tp2').textContent=G.t2.score;$('tc1').classList.toggle('playing',G.playing===1);$('tc2').classList.toggle('playing',G.playing===2)}
+if(SETTINGS.mode==='solo'){$('soloPts').textContent=ar(G.soloScore)}
+else{$('tp1').textContent=ar(G.t1.score);$('tp2').textContent=ar(G.t2.score);$('tc1').classList.toggle('playing',G.playing===1);$('tc2').classList.toggle('playing',G.playing===2)}
 }
 function showX(){const o=$('oxOverlay');o.classList.add('show');setTimeout(()=>o.classList.remove('show'),900)}
-function showModal(t,p,s){$('mTitle').textContent=t;$('mPts').textContent=p;$('mSub').textContent=s;$('modal').classList.add('show')}
+// كل نص النافذة يمر من هنا، فتحويل الأرقام في هذا الموضع يغطي رسائل النقاط
+// والسرقة وتكلفة الأدوات دفعة واحدة. لا تعرض هذه النافذة أي كود أو مفتاح.
+function showModal(t,p,s){$('mTitle').textContent=ar(t);$('mPts').textContent=ar(p);$('mSub').textContent=ar(s);$('modal').classList.add('show')}
 function closeModal(){$('modal').classList.remove('show');AudioEngine.play('click')}
 
 // Custom confirm (replaces browser confirm)
@@ -1433,15 +1439,16 @@ function closeConfirm(){ $('confirmModal').classList.remove('show'); AudioEngine
 // ========= LIVE TOUCHES =========
 function renderProgress(){const el=$('qProgress');if(!el)return;let h='';for(let i=0;i<Q_PER_ROUND;i++){let c='pip';if(i<G.qInRound)c+=' done';else if(i===G.qInRound)c+=' current';h+='<span class="'+c+'"></span>'}el.innerHTML=h}
 
-function showRoundTransition(roundNum,cb){const el=$('roundTrans');if(!el){if(cb)cb();return}$('rtTitle').textContent='الجولة '+roundNum;el.classList.add('show');AudioEngine.play('open');setTimeout(()=>{el.classList.remove('show');if(cb)cb()},2200)}
+function showRoundTransition(roundNum,cb){const el=$('roundTrans');if(!el){if(cb)cb();return}$('rtTitle').textContent='الجولة '+ar(roundNum);el.classList.add('show');AudioEngine.play('open');setTimeout(()=>{el.classList.remove('show');if(cb)cb()},2200)}
 
 function miniConfetti(){const style=getComputedStyle(document.body);const cols=[style.getPropertyValue('--gold'),style.getPropertyValue('--confetti1'),style.getPropertyValue('--confetti2'),'#ffffff'];for(let i=0;i<26;i++){const el=document.createElement('div');el.className='confetti';el.style.cssText='left:'+(36+Math.random()*28)+'vw;top:20vh;width:'+(6+Math.random()*8)+'px;height:'+(6+Math.random()*8)+'px;background:'+cols[Math.floor(Math.random()*cols.length)]+';border-radius:'+(Math.random()>0.5?'50%':'2px');document.body.appendChild(el);el.animate([{transform:'translateY(0) rotate(0)',opacity:1},{transform:'translateY(62vh) rotate('+(360+Math.random()*360)+'deg)',opacity:0}],{duration:1400+Math.random()*900,easing:'cubic-bezier(.25,.46,.45,.94)',delay:Math.random()*300}).onfinish=()=>el.remove()}}
 
 // ========= GAME OVER =========
 function endGame(){stopTimer();$('gameScreen').classList.add('hidden');$('goScreen').classList.remove('hidden');
-if(SETTINGS.mode==='solo'){$('goName').textContent=G.t1.name;$('goScore').textContent=G.soloScore+' نقطة';AudioEngine.play('win');confetti();renderStats();saveResult({name:G.t1.name,score:G.soloScore},{name:'—',score:0})}
-else{const w=G.t1.score>=G.t2.score?G.t1:G.t2;const l=G.t1.score>=G.t2.score?G.t2:G.t1;$('goName').textContent=w.name;$('goScore').textContent=w.score+' - '+l.score;AudioEngine.play('win');confetti();renderStats();saveResult(w,l)}}
-function renderStats(){const grid=$('statsGrid');const stats=[{label:iconSVG('trophy')+' الفريق الفائز',value:(G.t1.score>=G.t2.score?G.t1:G.t2).name},{label:iconSVG('chart')+' '+G.t1.name,value:G.t1.score+' نقطة'},{label:iconSVG('chart')+' '+G.t2.name,value:G.t2.score+' نقطة'},{label:iconSVG('target')+' إجابات مكشوفة',value:G.stats.totalReveals},{label:'✕ مجموع الأخطاء',value:G.stats.totalStrikes},{label:iconSVG('fire')+' أفضل سؤال',value:G.stats.bestRound.pts>0?G.stats.bestRound.team+' ('+G.stats.bestRound.pts+' نقطة)':'-'},{label:iconSVG('bolt')+' أسرع إجابة',value:G.stats.fastestReveal?G.stats.fastestReveal+' ثانية':'-'},{label:iconSVG('trending')+' الجولات',value:SETTINGS.rounds+' × '+Q_PER_ROUND+' أسئلة'}];grid.innerHTML=stats.map(s=>'<div class="stat-row"><span class="stat-label">'+s.label+'</span><span class="stat-value">'+s.value+'</span></div>').join('')}
+if(SETTINGS.mode==='solo'){$('goName').textContent=G.t1.name;$('goScore').textContent=ar(G.soloScore)+' نقطة';AudioEngine.play('win');confetti();renderStats();saveResult({name:G.t1.name,score:G.soloScore},{name:'—',score:0})}
+else{const w=G.t1.score>=G.t2.score?G.t1:G.t2;const l=G.t1.score>=G.t2.score?G.t2:G.t1;$('goName').textContent=w.name;$('goScore').textContent=ar(w.score)+' - '+ar(l.score);AudioEngine.play('win');confetti();renderStats();saveResult(w,l)}}
+function renderStats(){const grid=$('statsGrid');const stats=[{label:iconSVG('trophy')+' الفريق الفائز',value:(G.t1.score>=G.t2.score?G.t1:G.t2).name},{label:iconSVG('chart')+' '+G.t1.name,value:G.t1.score+' نقطة'},{label:iconSVG('chart')+' '+G.t2.name,value:G.t2.score+' نقطة'},{label:iconSVG('target')+' إجابات مكشوفة',value:G.stats.totalReveals},{label:'✕ مجموع الأخطاء',value:G.stats.totalStrikes},{label:iconSVG('fire')+' أفضل سؤال',value:G.stats.bestRound.pts>0?G.stats.bestRound.team+' ('+G.stats.bestRound.pts+' نقطة)':'-'},{label:iconSVG('bolt')+' أسرع إجابة',value:G.stats.fastestReveal?G.stats.fastestReveal+' ثانية':'-'},{label:iconSVG('trending')+' الجولات',value:SETTINGS.rounds+' × '+Q_PER_ROUND+' أسئلة'}];// القيمة وحدها تُحوَّل: التسمية تحمل أيقونة SVG وأرقام viewBox بداخلها.
+grid.innerHTML=stats.map(s=>'<div class="stat-row"><span class="stat-label">'+s.label+'</span><span class="stat-value">'+ar(s.value)+'</span></div>').join('')}
 
 // ========= HISTORY =========
 function getHistory(){try{return JSON.parse(localStorage.getItem('khamen_history')||'[]')}catch(e){return[]}}
@@ -1497,7 +1504,7 @@ async function loadCloudHistory(){
 }
 function closeHistory(){AudioEngine.play('close');$('historyModal').classList.remove('show')}
 function clearHistory(){gameConfirm('متأكد تبي تمسح كل سجل النتائج؟',function(){try{localStorage.removeItem('khamen_history')}catch(e){}renderHistoryList()},'🗑️')}
-function renderHistoryList(rows){const history=rows||getHistory();const list=$('historyList');if(history.length===0){list.innerHTML='<div class="history-empty">ما فيه نتائج محفوظة بعد</div>';return}const rc=['gold','silver','bronze'];list.innerHTML=history.map((h,i)=>{const rank=i<3?'<div class="history-rank '+rc[i]+'">'+iconSVG('trophy')+'</div>':'<div class="history-rank normal">'+(i+1)+'</div>';const t=iconSVG(h.winnerScore===h.loserScore?'users':'trophy');return'<div class="history-item">'+rank+'<div class="history-info"><div class="history-winner">'+t+' '+h.winner+'</div><div class="history-detail">'+h.winner+' '+h.winnerScore+' - '+h.loserScore+' '+h.loser+' · '+h.rounds+' جولات · '+h.date+'</div></div><div class="history-score">'+h.winnerScore+'</div></div>'}).join('')}
+function renderHistoryList(rows){const history=rows||getHistory();const list=$('historyList');if(history.length===0){list.innerHTML='<div class="history-empty">ما فيه نتائج محفوظة بعد</div>';return}const rc=['gold','silver','bronze'];list.innerHTML=history.map((h,i)=>{const rank=i<3?'<div class="history-rank '+rc[i]+'">'+iconSVG('trophy')+'</div>':'<div class="history-rank normal">'+ar(i+1)+'</div>';const t=iconSVG(h.winnerScore===h.loserScore?'users':'trophy');return'<div class="history-item">'+rank+'<div class="history-info"><div class="history-winner">'+t+' '+h.winner+'</div><div class="history-detail">'+h.winner+' '+ar(h.winnerScore)+' - '+ar(h.loserScore)+' '+h.loser+' · '+ar(h.rounds)+' جولات · '+ar(h.date)+'</div></div><div class="history-score">'+ar(h.winnerScore)+'</div></div>'}).join('')}
 function restart(){$('goScreen').classList.add('hidden');
   if(isLicensed()){$('setupScreen').classList.remove('hidden');updateNavKey();updateNavUser()}
   else{$('gateScreen').classList.remove('hidden');updateGateScreen()}
@@ -1694,5 +1701,5 @@ updateNavKey();
   }
 
   const yearEl = document.getElementById('footerYear');
-  if(yearEl) yearEl.textContent = new Date().getFullYear();
+  if(yearEl) yearEl.textContent = ar(new Date().getFullYear());
 })();

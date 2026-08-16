@@ -358,7 +358,7 @@
       <h2><svg class="icon"><use href="#i-pencil"></use></svg> محرر الأسئلة</h2>
       <p>أضف أسئلتك الخاصة أو احذف الموجودة</p>
     </div>
-    <div class="editor-count">عدد الأسئلة: <span id="qCount">0</span></div>
+    <div class="editor-count">عدد الأسئلة: <span id="qCount">٠</span></div>
     <div class="editor-search-wrap">
       <svg class="icon editor-search-icon"><use href="#i-search"></use></svg>
       <input type="text" id="editorSearch" class="editor-search" placeholder="ابحث عن سؤال..." oninput="renderEditorList()">
@@ -410,7 +410,7 @@
   <div class="scoreboard group-only" id="groupScoreboard">
     <div class="team-card playing" id="tc1">
       <div class="team-name" id="tn1">الفريق ١</div>
-      <div class="team-pts" id="tp1">0</div>
+      <div class="team-pts" id="tp1">٠</div>
     </div>
     <div class="led-timer hidden" id="timerWrap">
       <div class="led-label"><svg class="icon"><use href="#i-clock"></use></svg> الوقت</div>
@@ -419,18 +419,18 @@
           <circle class="arc-timer-track" cx="86" cy="86" r="72"></circle>
           <circle class="arc-timer-sweep" id="timerArc" cx="86" cy="86" r="72"></circle>
         </svg>
-        <span class="arc-timer-num" id="timerNum">60</span>
+        <span class="arc-timer-num" id="timerNum">٦٠</span>
       </div>
       <button class="timer-ctrl-btn play" id="timerToggleBtn" onclick="toggleTimer()"><svg class="icon"><use href="#i-play"></use></svg> تشغيل</button>
     </div>
     <div class="team-card" id="tc2">
       <div class="team-name" id="tn2">الفريق ٢</div>
-      <div class="team-pts" id="tp2">0</div>
+      <div class="team-pts" id="tp2">٠</div>
     </div>
   </div>
   <div class="solo-score-bar solo-only hidden" id="soloScoreboard">
     <div class="solo-name" id="soloName">اللاعب</div>
-    <div class="solo-pts" id="soloPts">0</div>
+    <div class="solo-pts" id="soloPts">٠</div>
     <div class="solo-label">نقطة</div>
   </div>
 
@@ -450,9 +450,9 @@
 
   <!-- TOOLS (directly after board) -->
   <div class="tools-bar">
-    <button class="ctrl-btn tool-btn" onclick="useTool('hint')" title="تلميح عن الإجابة الأعلى نقاط"><svg class="icon"><use href="#i-target"></use></svg> تلميح <span class="tool-cost">-15</span></button>
-    <button class="ctrl-btn tool-btn" onclick="useTool('letter')" title="يكشف أول حرف من إجابة مخفية"><svg class="icon"><use href="#i-eye"></use></svg> كشف حرف <span class="tool-cost">-10</span></button>
-    <button class="ctrl-btn tool-btn" onclick="useTool('shield')" title="يلغي الستريك التالي"><svg class="icon"><use href="#i-shield"></use></svg> درع <span class="tool-cost">-20</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('hint')" title="تلميح عن الإجابة الأعلى نقاط"><svg class="icon"><use href="#i-target"></use></svg> تلميح <span class="tool-cost">-١٥</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('letter')" title="يكشف أول حرف من إجابة مخفية"><svg class="icon"><use href="#i-eye"></use></svg> كشف حرف <span class="tool-cost">-١٠</span></button>
+    <button class="ctrl-btn tool-btn" onclick="useTool('shield')" title="يلغي الستريك التالي"><svg class="icon"><use href="#i-shield"></use></svg> درع <span class="tool-cost">-٢٠</span></button>
     <button class="ctrl-btn tool-btn hidden" id="buzzerUnlockBtn" onclick="unlockGameBuzzer()" title="افتح الأزرار عشان الفرق تقدر تضغط من جوالاتها"><svg class="icon"><use href="#i-bolt"></use></svg> فتح الأزرار</button>
   </div>
 
