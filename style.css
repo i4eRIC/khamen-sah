@@ -653,13 +653,106 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   content:''; display:block; width:70px; height:2px; background:var(--gold); margin:0 auto var(--sp-4);
 }
 
-/* Footer */
+/* Footer — دكة */
 .land-footer {
-  text-align:center; padding:var(--sp-6) var(--sp-5); background:var(--header-bg);
-  border-radius:var(--r-xl); margin:0 var(--sp-4) var(--sp-5);
+  background: var(--header-bg);
+  border: 1px solid color-mix(in srgb, var(--gold) 28%, transparent);
+  border-radius: var(--r-xl);
+  margin: 0 var(--sp-4) var(--sp-5);
+  padding: 28px 40px 18px;
+  text-align: initial;
 }
-.footer-text { font-size:1rem; color:var(--gold); font-family:'AA Galaxy','Lalezar',cursive }
-.footer-credit { margin-top:var(--sp-2); font-size:.75rem; color:var(--gold); opacity:.65 }
+
+/* الصف الأول: الاسم + الوصف / الروابط */
+.lf-top { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-6); flex-wrap:wrap }
+.lf-brand { display:flex; align-items:center; gap:var(--sp-4) }
+.lf-name {
+  font-family:'AA Galaxy','Lalezar',cursive; font-size:2.25rem; line-height:1;
+  color:#fff; /* أبيض ثابت: الشريط داكن في كل الثيمات */
+}
+.lf-sep { width:1px; height:28px; background:color-mix(in srgb, var(--gold) 35%, transparent) }
+.lf-tagline { font-size:0.78rem; letter-spacing:1px; color:var(--gold); opacity:.8 }
+
+.lf-links { display:flex; align-items:center; gap:var(--sp-5); flex-wrap:wrap }
+.lf-links a {
+  text-decoration:none; font-family:'AA Galaxy','Tajawal',sans-serif;
+  font-size:0.85rem; color:color-mix(in srgb, #fff 82%, var(--gold));
+  transition:color 0.2s var(--ease);
+}
+.lf-links a:hover { color:var(--gold) }
+.lf-links a:focus-visible { outline:2px solid var(--gold); outline-offset:3px; border-radius:6px }
+.lf-links .lf-play {
+  font-weight:800; color:var(--gold);
+  border:1.5px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  border-radius:11px; padding:6px 16px;
+  transition:all 0.25s var(--ease);
+}
+.lf-links .lf-play:hover { background:color-mix(in srgb, var(--gold) 14%, transparent); border-color:var(--gold) }
+.lf-links .lf-play:active { transform:translateY(1px) }
+
+/* الشعيرات الفاصلة */
+.lf-rule { height:1px; background:color-mix(in srgb, var(--gold) 28%, transparent); margin:24px 0 16px }
+.lf-rule + .lf-legal, .lf-contact + .lf-rule { margin-top:18px }
+
+/* تواصل معنا — الأيقونات على اليمين مباشرة بعد العنوان */
+.lf-contact { display:flex; align-items:center; gap:var(--sp-4); flex-wrap:wrap }
+.lf-contact-label { font-size:0.82rem; letter-spacing:2px; color:var(--gold); opacity:.75 }
+.lf-social {
+  width:36px; height:36px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  border:1.5px solid color-mix(in srgb, var(--gold) 50%, transparent);
+  color:var(--gold); transition:all 0.25s var(--ease);
+}
+.lf-social svg { width:17px; height:17px; fill:currentColor; stroke:none }
+.lf-social-stroke svg { fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round }
+.lf-social:hover { background:color-mix(in srgb, var(--gold) 14%, transparent); border-color:var(--gold) }
+.lf-social:active { transform:translateY(1px) }
+.lf-social:focus-visible { outline:2px solid var(--gold); outline-offset:2px }
+
+/* سطر الحقوق — أكبر من السابق */
+.lf-legal {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4);
+  font-family:'AA Galaxy','Readex Pro',sans-serif; font-size:1rem; color:var(--gold);
+}
+.lf-mark { font-family:'AA Galaxy','Lalezar',cursive; font-size:1.25rem; letter-spacing:2px }
+
+/* تصحيحات لكل ثيم — بنفس منطق الملف الأصلي:
+   «غروب» ذهبه داكن جداً فيستخدم --gold-dark، و«غابة» رأسه بنفس لون
+   الخلفية فيحتاج شعيرة أوضح ونص فاتح بدل الذهبي. */
+[data-theme="sunset"] .land-footer { border-color:color-mix(in srgb, var(--gold-dark) 30%, transparent) }
+[data-theme="sunset"] .lf-tagline,
+[data-theme="sunset"] .lf-contact-label,
+[data-theme="sunset"] .lf-legal,
+[data-theme="sunset"] .lf-social,
+[data-theme="sunset"] .lf-links .lf-play { color:var(--gold-dark) }
+[data-theme="sunset"] .lf-rule,
+[data-theme="sunset"] .lf-sep { background:color-mix(in srgb, var(--gold-dark) 28%, transparent) }
+[data-theme="sunset"] .lf-social { border-color:color-mix(in srgb, var(--gold-dark) 50%, transparent) }
+[data-theme="sunset"] .lf-social:hover { background:color-mix(in srgb, var(--gold-dark) 14%, transparent); border-color:var(--gold-dark) }
+
+[data-theme="forest"] .land-footer { border-color:color-mix(in srgb, var(--border-light) 45%, transparent) }
+[data-theme="forest"] .lf-name,
+[data-theme="forest"] .lf-legal { color:var(--text) }
+[data-theme="forest"] .lf-tagline,
+[data-theme="forest"] .lf-contact-label { color:var(--text-mid); opacity:1 }
+[data-theme="forest"] .lf-rule,
+[data-theme="forest"] .lf-sep { background:color-mix(in srgb, var(--border-light) 30%, transparent) }
+[data-theme="forest"] .lf-social,
+[data-theme="forest"] .lf-links .lf-play,
+[data-theme="forest"] .lf-mark { color:var(--border-light) }
+[data-theme="forest"] .lf-social,
+[data-theme="forest"] .lf-links .lf-play { border-color:color-mix(in srgb, var(--border-light) 50%, transparent) }
+[data-theme="forest"] .lf-social:hover,
+[data-theme="forest"] .lf-links .lf-play:hover { background:color-mix(in srgb, var(--border-light) 14%, transparent); border-color:var(--border-light) }
+
+/* الجوال */
+@media (max-width:700px) {
+  .land-footer { padding:22px 20px 14px }
+  .lf-top { flex-direction:column; align-items:flex-start; gap:var(--sp-4) }
+  .lf-name { font-size:1.9rem }
+  .lf-links { gap:var(--sp-3) }
+  .lf-legal { flex-direction:column; align-items:flex-start; gap:6px; font-size:0.9rem }
+}
 
 /* =========================================================================
    SETUP
@@ -1284,7 +1377,7 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   .history-score { font-size: 1.3rem }
   .editor-header h2 { font-size: 2rem }
   .ea-title { font-size: 1.1rem }
-  .footer-text { font-size: 1.1rem }
+  .lf-name { font-size: 1.9rem }
 }
 
 /* ===== LANDSCAPE-MOBILE-BLOCKS-MOVED-BELOW ===== */
