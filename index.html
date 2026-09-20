@@ -70,9 +70,17 @@
 <!-- ==================== CINEMATIC INTRO ==================== -->
 <div class="app" id="introScreen">
   <div class="intro">
+    <div class="intro-rays" aria-hidden="true"></div>
     <div class="intro-glow"></div>
+    <div class="intro-motes" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="intro-vignette" aria-hidden="true"></div>
+    <div class="intro-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
     <div class="intro-logo logo-arc">
       <div class="logo-arc-seal">
+        <span class="intro-orbit" aria-hidden="true"></span>
         <svg class="logo-arc-svg" viewBox="0 0 150 150" aria-hidden="true">
           <circle class="logo-arc-track" cx="75" cy="75" r="68"></circle>
           <circle class="logo-arc-sweep" cx="75" cy="75" r="68"></circle>
@@ -82,9 +90,11 @@
       <div class="logo-arc-text">
         <div class="logo-arc-name">خمّن صح</div>
         <div class="logo-arc-rule"></div>
+        <div class="intro-tagline">لعبة جماعية للأهل والأصحاب</div>
       </div>
     </div>
-    <div class="intro-tap">اضغط للمتابعة</div>
+
+    <div class="intro-tap"><span class="intro-tap-pill">اضغط للمتابعة<i class="intro-caret"></i></span></div>
   </div>
 </div>
 

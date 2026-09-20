@@ -1043,41 +1043,121 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 /* =========================================================================
    CINEMATIC INTRO
    ========================================================================= */
+/* شاشة الافتتاح مبنية على لون واحد --ink: الذهبي في أغلب الثيمات، ويتغيّر في
+   «غروب» و«غابة» بنفس منطق بقية الملف (ذهب «غروب» بني شبه أسود، وذهب «غابة»
+   زيتوني باهت على خلفية خضراء داكنة، فكلاهما يختفي لو تُرك كما هو). */
 .intro {
+  --ink: var(--gold);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   min-height:100vh; padding:20px; position:relative; overflow:hidden; cursor:pointer;
   transition:opacity 0.45s ease, transform 0.5s cubic-bezier(.4,0,.2,1), filter 0.5s ease;
 }
+[data-theme="sunset"] .intro { --ink: var(--gold-dark) }
+[data-theme="forest"] .intro { --ink: var(--border-light) }
 .intro.leaving { opacity:0; transform:scale(1.06); filter:blur(6px); pointer-events:none }
+
+/* الأشعة: مروحة رفيعة تدور ببطء خلف الشعار، مقنّعة بحيث تخفت عند الأطراف */
+.intro-rays {
+  position:absolute; width:min(160vmin,1200px); height:min(160vmin,1200px); border-radius:50%;
+  pointer-events:none; opacity:0;
+  background:repeating-conic-gradient(from 0deg,
+    color-mix(in srgb, var(--ink) 7%, transparent) 0deg 4deg, transparent 4deg 18deg);
+  -webkit-mask-image:radial-gradient(circle, #000 8%, transparent 52%);
+  mask-image:radial-gradient(circle, #000 8%, transparent 52%);
+  animation:introRays 1.4s 0.5s ease forwards, introSpin 80s linear infinite;
+}
 .intro-glow {
-  position:absolute; width:300px; height:300px; border-radius:50%;
+  position:absolute; width:min(420px,70vmin); height:min(420px,70vmin); border-radius:50%;
   background:radial-gradient(circle, var(--gold-glow), transparent 70%);
   animation:introGlow 3.5s ease-in-out infinite alternate; pointer-events:none;
 }
 @keyframes introGlow { 0% { transform:scale(0.85); opacity:0.24 } 100% { transform:scale(1.35); opacity:0.5 } }
-.intro-logo { text-align:center; position:relative }
-.intro-line { width:0; height:3px; border-radius:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:0 auto }
-.line1 { animation:lineGrow 0.9s 0.2s cubic-bezier(.16,.84,.44,1) forwards }
-.line2 { animation:lineGrow 0.9s 0.55s cubic-bezier(.16,.84,.44,1) forwards }
-@keyframes lineGrow { to { width:280px } }
-.intro-title {
-  font-family:'AA Galaxy','Lalezar',cursive;
-  font-size:clamp(4rem,14vw,9rem); color:var(--accent);
-  opacity:0; filter:blur(14px); transform:scale(0.92) translateY(10px);
-  animation:introTitle 1s 0.35s cubic-bezier(.16,.84,.44,1) forwards; line-height:1.1;
+
+/* ذرّات ضوء تصعد ببطء — ست فقط حتى تبقى الحركة هادئة */
+.intro-motes { position:absolute; inset:0; overflow:hidden; pointer-events:none }
+.intro-motes span {
+  position:absolute; bottom:-14px; width:6px; height:6px; border-radius:50%;
+  background:color-mix(in srgb, var(--ink) 65%, transparent);
+  opacity:0; animation:moteRise linear infinite;
 }
-@keyframes introTitle {
-  0% { opacity:0; filter:blur(14px); transform:scale(0.92) translateY(10px) }
-  55% { opacity:1; filter:blur(0) }
-  100% { opacity:1; filter:blur(0); transform:scale(1) translateY(0) }
+.intro-motes span:nth-child(1) { left:12%; animation-duration:17s; animation-delay:0.4s }
+.intro-motes span:nth-child(2) { left:28%; width:4px; height:4px; animation-duration:22s; animation-delay:3.5s }
+.intro-motes span:nth-child(3) { left:46%; width:5px; height:5px; animation-duration:19s; animation-delay:7s }
+.intro-motes span:nth-child(4) { left:64%; width:4px; height:4px; animation-duration:24s; animation-delay:1.8s }
+.intro-motes span:nth-child(5) { left:79%; animation-duration:16s; animation-delay:9.5s }
+.intro-motes span:nth-child(6) { left:91%; width:4px; height:4px; animation-duration:21s; animation-delay:5.2s }
+@keyframes moteRise {
+  0%   { transform:translateY(0) scale(.7); opacity:0 }
+  14%  { opacity:.5 }
+  78%  { opacity:.3 }
+  100% { transform:translateY(-94vh) scale(1.05); opacity:0 }
 }
-.intro-tap { margin-top:40px; font-size:0.95rem; color:var(--text-soft); opacity:0; animation:introFade 0.5s 2.8s ease forwards }
-.intro-tap::after {
-  content:''; display:block; width:40px; height:2px; margin:8px auto 0;
-  background:var(--border); border-radius:1px; animation:tapPulse 1.5s 3s ease infinite;
+
+/* تعتيم خفيف عند الحواف يجمع النظر على الشعار */
+.intro-vignette {
+  position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,0.20) 100%);
+}
+
+/* إطار الزوايا — أربع أقواس تدخل بعد الشعار */
+.intro-frame { position:absolute; inset:clamp(14px,3.2vmin,34px); pointer-events:none }
+.intro-frame i {
+  position:absolute; width:clamp(32px,7vmin,64px); height:clamp(32px,7vmin,64px);
+  border:2px solid color-mix(in srgb, var(--ink) 45%, transparent);
+  opacity:0; animation:introFade 0.9s 1.2s ease forwards;
+}
+.intro-frame i:nth-child(1) { top:0; right:0;    border-left:0;  border-bottom:0; border-top-right-radius:16px }
+.intro-frame i:nth-child(2) { top:0; left:0;     border-right:0; border-bottom:0; border-top-left-radius:16px }
+.intro-frame i:nth-child(3) { bottom:0; right:0; border-left:0;  border-top:0;    border-bottom-right-radius:16px }
+.intro-frame i:nth-child(4) { bottom:0; left:0;  border-right:0; border-top:0;    border-bottom-left-radius:16px }
+
+/* حلقة متقطّعة تدور حول الميدالية + هالة تتنفّس خلفها */
+.intro-orbit {
+  position:absolute; inset:-17%; border-radius:50%; opacity:0;
+  border:2px dashed color-mix(in srgb, var(--ink) 32%, transparent);
+  animation:introSpin 30s linear infinite, introFade 0.8s 1s ease forwards;
+}
+.intro .logo-arc-seal::before {
+  content:''; position:absolute; inset:-36%; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, color-mix(in srgb, var(--ink) 20%, transparent), transparent 65%);
+  animation:introGlow 4s 0.6s ease-in-out infinite alternate;
+}
+
+.intro-logo { text-align:center; position:relative; z-index:2 }
+.intro-tagline {
+  font-size:clamp(0.78rem,1.9vw,0.98rem); letter-spacing:3px; color:var(--text-mid);
+  opacity:0; animation:introFade 0.8s 1.3s ease forwards;
+}
+
+.intro-tap { position:relative; z-index:2; margin-top:clamp(28px,6vh,52px); opacity:0; animation:introFade 0.5s 2.2s ease forwards }
+.intro-tap-pill {
+  display:inline-flex; align-items:center; gap:10px; padding:10px 22px; border-radius:999px;
+  font-size:0.95rem; color:var(--text-soft);
+  border:1.5px solid color-mix(in srgb, var(--ink) 38%, transparent);
+  background:color-mix(in srgb, var(--ink) 7%, transparent);
+  animation:tapBreath 2.6s 2.6s var(--ease) infinite;
+}
+.intro-caret {
+  display:block; width:8px; height:8px;
+  border-right:2px solid currentColor; border-bottom:2px solid currentColor;
+  animation:caretBob 1.7s ease-in-out infinite;
 }
 @keyframes introFade { to { opacity:1 } }
-@keyframes tapPulse { 0%,100% { opacity:0.3; width:40px } 50% { opacity:0.8; width:60px } }
+@keyframes introRays { to { opacity:0.5 } }
+@keyframes introSpin { to { transform:rotate(360deg) } }
+@keyframes tapBreath {
+  0%,100% { box-shadow:0 0 0 0 color-mix(in srgb, var(--ink) 26%, transparent) }
+  55%     { box-shadow:0 0 0 8px transparent }
+}
+@keyframes caretBob {
+  0%,100% { transform:rotate(45deg) translate(0,0) }
+  50%     { transform:rotate(45deg) translate(2px,2px) }
+}
+
+@media (max-width:600px) {
+  .intro-tagline { letter-spacing:2px }
+  .intro-motes span:nth-child(4), .intro-motes span:nth-child(6) { display:none }
+}
 
 /* =========================================================================
    AUTH SCREEN
