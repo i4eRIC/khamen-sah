@@ -1054,6 +1054,10 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 }
 [data-theme="sunset"] .intro { --ink: var(--gold-dark) }
 [data-theme="forest"] .intro { --ink: var(--border-light) }
+/* «رمل» فاتحة، والذهبي الفاتح عليها يكاد يختفي، فتأخذ الزينة الذهبي الغامق.
+   الشرط الثاني للحظة ما قبل تشغيل script.js حين لا يحمل body أي ثيم بعد. */
+[data-theme="sand"] .intro,
+html:not([data-theme]) .intro { --ink: var(--gold-dark) }
 .intro.leaving { opacity:0; transform:scale(1.06); filter:blur(6px); pointer-events:none }
 
 /* الأشعة: مروحة رفيعة تدور ببطء خلف الشعار، مقنّعة بحيث تخفت عند الأطراف */
