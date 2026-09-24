@@ -1113,7 +1113,7 @@ loadQuestionsFromSupabase();
 const Q_PER_ROUND = 5;
 let SETTINGS = { rounds: 2, timer: 60, theme: 'sand', tvMode: false, soundOn: true, volume: 0.7, mode: 'group', buzzerMode: false };
 
-// ========= BUZZER / ROOMS (experimental) =========
+// ========= BUZZER / ROOMS (الجرس عن بعد) =========
 let BUZZER = { channel:null, roomCode:null, slotNames:{1:null,2:null}, connectedNames:[], unlocked:false, winnerDeclared:false };
 
 function selectBuzzerMode(on){
@@ -1275,7 +1275,7 @@ function hideBuzzBanner(){
 
 let G = { t1:{name:'',score:0}, t2:{name:'',score:0}, playing:1, round:0, qIndex:0, qInRound:0, strikes:0, roundPts:{1:0,2:0}, revealed:new Set(), questions:[], timerInterval:null, timerLeft:0, timerRunning:false, soloScore:0, soloStrikes:0, stealMode:false, stealPts:0, stealFrom:'', shieldActive:false, toolsUsed:{letter:false,hint:false,shield:false}, stats:{roundScores:[],totalReveals:0,totalStrikes:0,bestRound:{team:'',pts:0},fastestReveal:null,roundStartTime:0} };
 const $=id=>document.getElementById(id);
-// أرقام عربية هندية للعرض فقط. لا تُستعمل مع كود غرفة البازر ولا مفتاح
+// أرقام عربية هندية للعرض فقط. لا تُستعمل مع كود غرفة الجرس ولا مفتاح
 // التفعيل ولا حقول الإدخال: تلك تُقرأ أو تُكتب على لوحة مفاتيح لاتينية.
 const AR_DIGITS='٠١٢٣٤٥٦٧٨٩';
 const ar=v=>String(v==null?'':v).replace(/[0-9]/g,d=>AR_DIGITS[+d]);
@@ -1494,7 +1494,7 @@ if(!checkLicenseForPlay()) return;
 const totalNeeded=SETTINGS.rounds*Q_PER_ROUND;if(ALL_Q.length<totalNeeded)return showModal('⚠️','','تحتاج '+totalNeeded+' سؤال ('+SETTINGS.rounds+' جولات × '+Q_PER_ROUND+' أسئلة) لكن عندك '+ALL_Q.length+' فقط!');
 const isSolo=SETTINGS.mode==='solo';
 if(!isSolo && SETTINGS.buzzerMode){
-  if(!BUZZER.channel) return showModal('⚠️','','أنشئ غرفة البازر الأول!');
+  if(!BUZZER.channel) return showModal('⚠️','','أنشئ غرفة الجرس الأول!');
   if(!BUZZER.slotNames[1]||!BUZZER.slotNames[2]) return showModal('⚠️','','لازم الفريقين ينضمون للغرفة قبل ما تبدأ اللعبة!');
 }
 G.t1.name=isSolo?($('inpSolo').value.trim()||'اللاعب'):(SETTINGS.buzzerMode?BUZZER.slotNames[1]:($('inp1').value.trim()||'الفريق الأول'));
