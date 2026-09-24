@@ -1114,7 +1114,7 @@ const Q_PER_ROUND = 5;
 let SETTINGS = { rounds: 2, timer: 60, theme: 'sand', tvMode: false, soundOn: true, volume: 0.7, mode: 'group', buzzerMode: false };
 
 // ========= BUZZER / ROOMS (الجرس عن بعد) =========
-let BUZZER = { channel:null, roomCode:null, slotNames:{1:null,2:null}, connectedNames:[], unlocked:false, winnerDeclared:false };
+let BUZZER = { channel:null, roomCode:null, slotNames:{1:null,2:null}, connectedNames:[], unlocked:false, winnerDeclared:false, creating:false };
 
 function selectBuzzerMode(on){
   SETTINGS.buzzerMode = on;
@@ -1125,7 +1125,11 @@ function selectBuzzerMode(on){
   AudioEngine.play('click');
 }
 
-function genRoomCode(){ return String(Math.floor(10000 + Math.random()*90000)); }
+// ست خانات (٩٠٠ ألف احتمال) بدل خمس: الكود يُختار عشوائياً، والمساحة الأوسع
+// تقلّل فرص التصادم عشرة أضعاف قبل أن يتدخّل الفحص في claimRoomCode.
+function genRoomCode(){ return String(Math.floor(100000 + Math.random()*900000)); }
+const ROOM_CODE_TRIES = 5;
+const ROOM_PROBE_MS = 1200;
 
 // SVG rather than canvas so the code stays crisp on a projector or TV, which is
 // where this actually gets pointed at. The library is a CDN script; if it didn't
@@ -1171,26 +1175,49 @@ function copyJoinUrl(){
 }
 
 function createBuzzerRoom(){
-  if (BUZZER.channel) return; // already created
-  const code = genRoomCode();
-  BUZZER.roomCode = code;
-  BUZZER.slotNames = {1:null, 2:null};
+  if (BUZZER.channel || BUZZER.creating) return; // already created, or mid-creation
+  BUZZER.creating = true;
+  const btn = $('createRoomBtn');
+  if (btn){ btn.disabled = true; btn.innerHTML = iconSVG('refresh') + ' جاري الإنشاء...' }
+  claimRoomCode(1);
+}
 
-  $('buzzerCodeDisplay').textContent = code;
-  // /j/CODE instead of /buzzer-join.html?code=CODE -- players read this off a
-  // screen and type it on a phone, so every character removed is one less typo.
-  // The _redirects file rewrites it back to the real page.
-  const joinUrl = location.origin + '/j/' + code;
-  $('buzzerJoinUrl').textContent = joinUrl;
-  renderBuzzerQR(joinUrl);
-  $('createRoomBtn').classList.add('hidden');
-  $('buzzerRoomInfo').classList.remove('hidden');
+function roomCreateFailed(msg){
+  BUZZER.creating = false;
+  const btn = $('createRoomBtn');
+  if (btn){ btn.disabled = false; btn.innerHTML = iconSVG('plus') + ' إنشاء غرفة' }
+  showModal('⚠️','', msg);
+}
 
+// A room is nothing but a realtime channel named after its code, and the code
+// used to be taken blind. Two hosts drawing the same number in the same hour
+// would share one channel: their players land in each other's slots and a buzz
+// from one game reaches the other host. So we now join the candidate channel
+// first and look for another host in presence before claiming it — a code only
+// clashes while both rooms are live, which is why nothing is stored anywhere.
+function claimRoomCode(attempt){
   const sb = getSb();
+  const code = genRoomCode();
   const channel = sb.channel('room-' + code, { config: { presence: { key: 'host' } } });
+  let claimed = false, settled = false;
+
+  const decide = (free) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    if (free){ claimed = true; finishBuzzerRoom(code, channel); return }
+    try { sb.removeChannel(channel) } catch(e){}
+    if (attempt >= ROOM_CODE_TRIES) return roomCreateFailed('تعذّر إيجاد كود فاضي — جرّب مرة ثانية');
+    claimRoomCode(attempt + 1);
+  };
+
+  // No presence answer within the window means nobody is broadcasting there,
+  // so the code is taken rather than leaving the host staring at a dead button.
+  const timer = setTimeout(() => decide(true), ROOM_PROBE_MS);
 
   channel.on('presence', { event: 'sync' }, () => {
     const state = channel.presenceState();
+    if (!claimed) return decide(!state['host']);   // probe: is another host here?
     const joinedNames = [];
     Object.keys(state).forEach(key => {
       if (key === 'host') return;
@@ -1216,7 +1243,7 @@ function createBuzzerRoom(){
   });
 
   channel.on('broadcast', { event: 'buzz' }, (payload) => {
-    if (!BUZZER.unlocked || BUZZER.winnerDeclared) return;
+    if (!claimed || !BUZZER.unlocked || BUZZER.winnerDeclared) return;
     const teamName = payload.payload.team_name;
     const slotNum = BUZZER.slotNames[1] === teamName ? 1 : (BUZZER.slotNames[2] === teamName ? 2 : null);
     if (!slotNum) return;
@@ -1227,8 +1254,39 @@ function createBuzzerRoom(){
     channel.send({ type:'broadcast', event:'winner', payload:{ team_name: teamName } });
   });
 
-  channel.subscribe((status) => { if (status === 'SUBSCRIBED') channel.track({ role:'host' }); });
+  // Nothing is tracked on SUBSCRIBED any more: announcing ourselves as the host
+  // before the probe finishes would make a second host see us and skip a code
+  // that is in fact free — and would plant us inside a room that is not ours.
+  channel.subscribe((status) => {
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try { sb.removeChannel(channel) } catch(e){}
+      roomCreateFailed('تعذّر الاتصال بالسيرفر — تأكد من الإنترنت وجرّب مرة ثانية');
+    }
+  });
+}
+
+function finishBuzzerRoom(code, channel){
+  BUZZER.roomCode = code;
+  BUZZER.slotNames = {1:null, 2:null};
+  BUZZER.connectedNames = [];
   BUZZER.channel = channel;
+  BUZZER.creating = false;
+
+  $('buzzerCodeDisplay').textContent = code;
+  // /j/CODE instead of /buzzer-join.html?code=CODE -- players read this off a
+  // screen and type it on a phone, so every character removed is one less typo.
+  // The _redirects file rewrites it back to the real page.
+  const joinUrl = location.origin + '/j/' + code;
+  $('buzzerJoinUrl').textContent = joinUrl;
+  renderBuzzerQR(joinUrl);
+  $('createRoomBtn').classList.add('hidden');
+  $('buzzerRoomInfo').classList.remove('hidden');
+  updateBuzzerSlotUI();
+
+  channel.track({ role:'host' });
 }
 
 function updateBuzzerSlotUI(){
