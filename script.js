@@ -1412,6 +1412,7 @@ const THEMES=[
   {id:'forest',   name:'غابة', swatch:'#1a3c2a'},
   {id:'sunset',   name:'غروب', swatch:'#5c2a1a'},
   {id:'navy',     name:'كحلي', swatch:'#1c5882'},
+  {id:'dakkah',   name:'دكة',  swatch:'#241f45'},
 ];
 
 const THEME_KEY = 'khamen_theme';

@@ -25,6 +25,7 @@
   --header-bg: #5c2f14; --slot-hover-num: #f0e4cf;
   --confetti1:#7a3f1c;--confetti2:#eab543;--confetti3:#7a3f1c;--confetti4:#92502a;
   --on-accent: #fbf3e6;
+  --pattern: var(--pat-black);
 }
 
 /* --accent sits in a narrow window here. It fills the active team's card, so it
@@ -42,6 +43,7 @@
   --header-bg: #0c2138; --slot-hover-num: #32678f;
   --confetti1:#1d5674;--confetti2:#fbbf24;--confetti3:#34d399;--confetti4:#3f87a6;
   --on-accent: #e0e0e0;
+  --pattern: var(--pat-white);
 }
 
 /* Owner's palette, applied verbatim by request — do not "correct" it on a later
@@ -59,6 +61,7 @@
   --header-bg: #2d380a; --slot-hover-num: #1a5030;
   --confetti1:#fdf0d5;--confetti2:#8e773e;--confetti3:#34d399;--confetti4:#6ee7a0;
   --on-accent: #606c38;
+  --pattern: var(--pat-white);
 }
 
 [data-theme="sunset"] {
@@ -72,6 +75,7 @@
   --header-bg: #23110c; --slot-hover-num: #5a3020;
   --confetti1:#fb923c;--confetti2:#2a1509;--confetti3:#34d399;--confetti4:#af773c;
   --on-accent: #000000;
+  --pattern: var(--pat-white);
 }
 
 /* --accent here is deliberately a deep steel blue, not a light tint: it is painted
@@ -88,6 +92,42 @@
   --header-bg: #0a1120; --slot-hover-num: #24365c;
   --confetti1:#f5c451;--confetti2:#3ecf8e;--confetti3:#2471a6;--confetti4:#a78bfa;
   --on-accent: #eaf3fb;
+  --pattern: var(--pat-white);
+}
+
+/* «دكة» — هوية متجر دكة: نيلي #241F45 ونقشة نرد خفيفة (تجربة). --accent بنفسجي
+   غامق لأن نقاط الفريق النشط تنكتب عليه بالذهبي — الذهبي عليه ٥٫٦:١. */
+[data-theme="dakkah"] {
+  --bg: #241f45; --bg-card: #2d2856; --bg-card2: #332d61;
+  --border: #4a437f; --border-light: #3b3569;
+  --text: #f1eefb; --text-mid: #b8b1de; --text-soft: #8b84b8;
+  --accent: #4b3c9e; --accent-light: #6b5bd0; --accent-glow: rgba(107,91,208,0.25);
+  --gold: #f5c451; --gold-dark: #d9a93a; --gold-glow: rgba(245,196,81,0.25);
+  --green: #3ecf8e; --green-bg: #173a33; --green-border: #2aa572; --green-glow: rgba(62,207,142,0.2);
+  --red: #2e2757; --red-bg: #1b1638; --red-border: #4a437f; --red-glow: rgba(74,67,127,0.3);
+  --header-bg: #1a1633; --slot-hover-num: #3b3569;
+  --confetti1:#f5c451;--confetti2:#6b5bd0;--confetti3:#3ecf8e;--confetti4:#b8b1de;
+  --on-accent: #f1eefb;
+  --pattern: var(--pat-white);
+}
+/* نص مكتوب بلون --accent على الخلفية مباشرة: البنفسجي الغامق ما يُقرأ على النيلي،
+   فاسم اللعبة يصير فاتحاً والعناوين والتظليل خزامياً (٧٫٥:١). التعبئات والنص على
+   الذهبي (مثل رقم البطاقة المكشوفة) باقية كما هي. */
+[data-theme="dakkah"] :is(.setup-logo, .nav-logo, .auth-logo, .gate-logo, .go-name) { color:var(--text) }
+[data-theme="dakkah"] :is(.hero-tagline .hl, .land-title, .step-text strong, .nav-link:hover, .nav-link.current, .nav-link-m:hover,
+  .modal-card h2, .editor-header h2, .editor-search-clear:hover, .eq-item .eq-edit, .ea-title, .stats-title, .solo-name,
+  .auth-box h2, .auth-link, .auth-welcome, .nav-user-btn:hover, .gate-trial .gate-icon, .nav-key-btn.active,
+  .key-status-badge.active, .buzzer-slot.joined .bs-status, .setup-editor-btn:hover, .overlay-check .big) { color:#b9acff }
+
+/* نقشة دكّة — من ملفات الهوية البصرية للمتجر، مضمّنة كـ data URI لأن صفحة
+   الجرس تُقدَّم أيضاً من /j/CODE فينكسر فيها أي مسار نسبي. البيضاء للثيمات
+   الداكنة والسوداء لثيم «رمل» الفاتح، والشفافية مخبوزة داخل الملف.
+   لتوليدها من جديد: export/pattern-build/gen.py */
+:root {
+  --pat-white:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><g opacity='0.085'><g transform='translate%2856 62%29 rotate%28-14%29'><rect x='-20.0' y='-20.0' width='40' height='40' rx='11.2' fill='none' stroke='%23FFFFFF' stroke-width='3.2'/><circle cx='0.0' cy='0.0' r='3.4' fill='%23FFFFFF' stroke='none'/></g><g transform='translate%28214 48%29 rotate%2813%29'><rect x='-16.0' y='-16.0' width='32' height='32' rx='9.0' fill='none' stroke='%23FFFFFF' stroke-width='3.2'/><circle cx='-7.4' cy='-7.4' r='2.7' fill='%23FFFFFF' stroke='none'/><circle cx='7.4' cy='7.4' r='2.7' fill='%23FFFFFF' stroke='none'/></g><g transform='translate%28134 172%29 rotate%2821%29'><rect x='-22.0' y='-22.0' width='44' height='44' rx='12.3' fill='none' stroke='%23FFFFFF' stroke-width='3.2'/><circle cx='-10.1' cy='-10.1' r='3.7' fill='%23FFFFFF' stroke='none'/><circle cx='0.0' cy='0.0' r='3.7' fill='%23FFFFFF' stroke='none'/><circle cx='10.1' cy='10.1' r='3.7' fill='%23FFFFFF' stroke='none'/></g><g transform='translate%28258 232%29 rotate%28-9%29'><rect x='-17.0' y='-17.0' width='34' height='34' rx='9.5' fill='none' stroke='%23FFFFFF' stroke-width='3.2'/><circle cx='0.0' cy='0.0' r='2.9' fill='%23FFFFFF' stroke='none'/></g><g transform='translate%2858 258%29 rotate%288%29'><rect x='-15.0' y='-15.0' width='30' height='30' rx='8.4' fill='none' stroke='%23FFFFFF' stroke-width='3.2'/><circle cx='-6.9' cy='-6.9' r='2.6' fill='%23FFFFFF' stroke='none'/><circle cx='6.9' cy='6.9' r='2.6' fill='%23FFFFFF' stroke='none'/></g><circle cx='132' cy='68' r='4.5' fill='%23FFFFFF'/><circle cx='268' cy='130' r='5' fill='%23FFFFFF'/><circle cx='198' cy='258' r='4.5' fill='%23FFFFFF'/><circle cx='28' cy='162' r='4' fill='%23FFFFFF'/><circle cx='204' cy='158' r='3.5' fill='%23FFFFFF'/><circle cx='120' cy='268' r='3.5' fill='%23FFFFFF'/></g></svg>");
+  --pat-black:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><g opacity='0.075'><g transform='translate%2856 62%29 rotate%28-14%29'><rect x='-20.0' y='-20.0' width='40' height='40' rx='11.2' fill='none' stroke='%23000000' stroke-width='3.2'/><circle cx='0.0' cy='0.0' r='3.4' fill='%23000000' stroke='none'/></g><g transform='translate%28214 48%29 rotate%2813%29'><rect x='-16.0' y='-16.0' width='32' height='32' rx='9.0' fill='none' stroke='%23000000' stroke-width='3.2'/><circle cx='-7.4' cy='-7.4' r='2.7' fill='%23000000' stroke='none'/><circle cx='7.4' cy='7.4' r='2.7' fill='%23000000' stroke='none'/></g><g transform='translate%28134 172%29 rotate%2821%29'><rect x='-22.0' y='-22.0' width='44' height='44' rx='12.3' fill='none' stroke='%23000000' stroke-width='3.2'/><circle cx='-10.1' cy='-10.1' r='3.7' fill='%23000000' stroke='none'/><circle cx='0.0' cy='0.0' r='3.7' fill='%23000000' stroke='none'/><circle cx='10.1' cy='10.1' r='3.7' fill='%23000000' stroke='none'/></g><g transform='translate%28258 232%29 rotate%28-9%29'><rect x='-17.0' y='-17.0' width='34' height='34' rx='9.5' fill='none' stroke='%23000000' stroke-width='3.2'/><circle cx='0.0' cy='0.0' r='2.9' fill='%23000000' stroke='none'/></g><g transform='translate%2858 258%29 rotate%288%29'><rect x='-15.0' y='-15.0' width='30' height='30' rx='8.4' fill='none' stroke='%23000000' stroke-width='3.2'/><circle cx='-6.9' cy='-6.9' r='2.6' fill='%23000000' stroke='none'/><circle cx='6.9' cy='6.9' r='2.6' fill='%23000000' stroke='none'/></g><circle cx='132' cy='68' r='4.5' fill='%23000000'/><circle cx='268' cy='130' r='5' fill='%23000000'/><circle cx='198' cy='258' r='4.5' fill='%23000000'/><circle cx='28' cy='162' r='4' fill='%23000000'/><circle cx='204' cy='158' r='3.5' fill='%23000000'/><circle cx='120' cy='268' r='3.5' fill='%23000000'/></g></svg>");
 }
 
 :root { --slot-h: 72px;
@@ -140,6 +180,7 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   position: fixed; inset: 0; z-index: 0;
   background:
     radial-gradient(ellipse 85% 45% at 50% -8%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 68%),
+    var(--pattern, none) 0 0 / 300px 300px repeat,
     var(--bg);
 }
 /* The dot grid that used to sit here is gone: a flat surface reads as calmer,
@@ -653,9 +694,10 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   content:''; display:block; width:70px; height:2px; background:var(--gold); margin:0 auto var(--sp-4);
 }
 
-/* Footer — دكة */
+/* Footer — دكة. شريطه داكن في كل الثيمات، فالنقشة البيضاء تناسبه دائماً
+   حتى في ثيم «رمل» الفاتح الذي يستعمل النقشة السوداء في بقية الصفحة. */
 .land-footer {
-  background: var(--header-bg);
+  background: var(--pat-white) 0 0 / 300px 300px repeat, var(--header-bg);
   border: 1px solid color-mix(in srgb, var(--gold) 28%, transparent);
   border-radius: var(--r-xl);
   margin: 0 var(--sp-4) var(--sp-5);
@@ -692,11 +734,9 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 
 /* الشعيرات الفاصلة */
 .lf-rule { height:1px; background:color-mix(in srgb, var(--gold) 28%, transparent); margin:24px 0 16px }
-.lf-rule + .lf-legal, .lf-contact + .lf-rule { margin-top:18px }
 
-/* تواصل معنا — الأيقونات على اليمين مباشرة بعد العنوان */
-.lf-contact { display:flex; align-items:center; gap:var(--sp-4); flex-wrap:wrap }
-.lf-contact-label { font-size:0.82rem; letter-spacing:2px; color:var(--gold); opacity:.75 }
+/* أيقونات التواصل — تُدفع بعيداً عن الاسم فتلتصق بمجموعة الروابط */
+.lf-socials { display:flex; align-items:center; gap:var(--sp-3); margin-right:auto }
 .lf-social {
   width:36px; height:36px; border-radius:11px;
   display:flex; align-items:center; justify-content:center;
@@ -721,7 +761,6 @@ button:focus-visible, a:focus-visible, input:focus-visible,
    الخلفية فيحتاج شعيرة أوضح ونص فاتح بدل الذهبي. */
 [data-theme="sunset"] .land-footer { border-color:color-mix(in srgb, var(--gold-dark) 30%, transparent) }
 [data-theme="sunset"] .lf-tagline,
-[data-theme="sunset"] .lf-contact-label,
 [data-theme="sunset"] .lf-legal,
 [data-theme="sunset"] .lf-social,
 [data-theme="sunset"] .lf-links .lf-play { color:var(--gold-dark) }
@@ -733,8 +772,7 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 [data-theme="forest"] .land-footer { border-color:color-mix(in srgb, var(--border-light) 45%, transparent) }
 [data-theme="forest"] .lf-name,
 [data-theme="forest"] .lf-legal { color:var(--text) }
-[data-theme="forest"] .lf-tagline,
-[data-theme="forest"] .lf-contact-label { color:var(--text-mid); opacity:1 }
+[data-theme="forest"] .lf-tagline { color:var(--text-mid); opacity:1 }
 [data-theme="forest"] .lf-rule,
 [data-theme="forest"] .lf-sep { background:color-mix(in srgb, var(--border-light) 30%, transparent) }
 [data-theme="forest"] .lf-social,
@@ -749,6 +787,7 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 @media (max-width:700px) {
   .land-footer { padding:22px 20px 14px }
   .lf-top { flex-direction:column; align-items:flex-start; gap:var(--sp-4) }
+  .lf-socials { margin-right:0 }
   .lf-name { font-size:1.9rem }
   .lf-links { gap:var(--sp-3) }
   .lf-legal { flex-direction:column; align-items:flex-start; gap:6px; font-size:0.9rem }
@@ -1725,7 +1764,8 @@ html:not([data-theme]) .intro { --ink: var(--gold-dark) }
 [data-theme="sunset"] .logo-arc-track { stroke:color-mix(in srgb, var(--gold-dark) 22%, transparent) }
 [data-theme="sunset"] .logo-arc-rule  { background:linear-gradient(90deg,var(--gold-dark),transparent) }
 [data-theme="ocean"] .logo-arc-name,
-[data-theme="navy"]  .logo-arc-name { color:var(--text) }
+[data-theme="navy"]  .logo-arc-name,
+[data-theme="dakkah"] .logo-arc-name { color:var(--text) }
 
 /* ولنفس السبب يتبع المؤقت --gold-dark في «غروب»، وإلا صار الرقم والحلقة
    بنيّاً شبه أسود على خلفية داكنة فلا يُقرأ. */

@@ -12,7 +12,8 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-  html,body{background:var(--bg);min-height:100%;user-select:text}
+  /* النقشة هنا على body مباشرة لأن هذه الصفحة بلا طبقة .bg مثل اللعبة */
+  html,body{background:var(--pattern, none) 0 0 / 300px 300px repeat fixed, var(--bg);min-height:100%;user-select:text}
   .ad-page{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
   .ad-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
   .ad-title{font-family:'AA Galaxy','Lalezar',cursive;font-size:2rem;color:var(--gold)}
