@@ -914,7 +914,10 @@ button:focus-visible, a:focus-visible, input:focus-visible,
   display:flex; align-items:center; gap:6px; transition:all 0.25s var(--ease);
 }
 .ea-total span { font-weight:800 }
-.ea-total[data-state="ok"] { border-color:var(--green-border); color:var(--green); background:color-mix(in srgb, var(--green) 10%, var(--bg-card2)) }
+/* أخضر صريح لا var(--green): في ثيم «رمل» قيمته بنّية بطلب المالك، فحالة
+   «تمام» كانت تطلع بلون النص العادي ولا تُقرأ كنجاح. هذا الأخضر يُقرأ على
+   البطاقة الفاتحة والداكنة معاً. */
+.ea-total[data-state="ok"] { border-color:#2f9e6a; color:#2f9e6a; background:color-mix(in srgb, #2f9e6a 12%, var(--bg-card2)) }
 .ea-total[data-state="off"] { border-color:var(--gold); color:var(--gold-dark); background:color-mix(in srgb, var(--gold) 12%, var(--bg-card2)) }
 .editor-footer { text-align:center; margin-top:20px; padding-bottom:30px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap }
 
