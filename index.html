@@ -406,6 +406,9 @@
     <div class="editor-empty hidden" id="editorEmpty">ما فيه نتائج مطابقة للبحث</div>
     <div class="editor-add">
       <div class="ea-title"><svg class="icon"><use href="#i-plus"></use></svg> إضافة سؤال جديد</div>
+      <!-- المجموع يُحسب وأنت تكتب: قاعدة البنك أن نقاط السؤال الواحد ١٠٠،
+           وبدون عدّاد يكتشف المقدّم الخلل وهو يلعب لا وهو يكتب. -->
+      <div class="ea-hint">مجموع نقاط السؤال الواحد <strong>١٠٠ نقطة</strong> — وزّعها على الإجابات حسب شهرتها</div>
       <input type="text" id="newQ" placeholder="اكتب السؤال هنا..." class="ea-input">
       <div class="ea-answers" id="newAnswers">
         <div class="ea-row"><input placeholder="الإجابة ١" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
@@ -415,6 +418,7 @@
         <div class="ea-row"><input placeholder="الإجابة ٥ (اختياري)" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
         <div class="ea-row"><input placeholder="الإجابة ٦ (اختياري)" class="ea-ans"><input type="number" placeholder="نقاط" class="ea-pts" min="1" max="100"></div>
       </div>
+      <div class="ea-total" id="eaTotal" data-state="empty">المجموع: <span id="eaTotalNum">٠</span> من ١٠٠<span id="eaTotalMark"></span></div>
       <button class="ctrl-btn ctrl-award" id="addQBtn" onclick="addOrUpdateQ()" style="margin-top:12px;width:100%"><svg class="icon"><use href="#i-plus"></use></svg> أضف السؤال</button>
     </div>
     <div class="editor-footer">

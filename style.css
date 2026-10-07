@@ -905,6 +905,17 @@ button:focus-visible, a:focus-visible, input:focus-visible,
 .ea-row input:focus { border-color:var(--gold) }
 .ea-ans { flex:1 }
 .ea-pts { width:70px; text-align:center }
+.ea-hint { font-size:0.85rem; color:var(--text-soft); margin-bottom:12px; line-height:1.6 }
+.ea-hint strong { color:var(--gold-dark); font-weight:800 }
+/* عدّاد المجموع — ثلاث حالات: فاضٍ، مطابق لـ١٠٠، ومختلف عنها */
+.ea-total {
+  margin-top:10px; padding:8px 14px; border-radius:10px; font-size:0.9rem; font-weight:700;
+  border:2px solid var(--border-light); background:var(--bg-card2); color:var(--text-soft);
+  display:flex; align-items:center; gap:6px; transition:all 0.25s var(--ease);
+}
+.ea-total span { font-weight:800 }
+.ea-total[data-state="ok"] { border-color:var(--green-border); color:var(--green); background:color-mix(in srgb, var(--green) 10%, var(--bg-card2)) }
+.ea-total[data-state="off"] { border-color:var(--gold); color:var(--gold-dark); background:color-mix(in srgb, var(--gold) 12%, var(--bg-card2)) }
 .editor-footer { text-align:center; margin-top:20px; padding-bottom:30px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap }
 
 /* =========================================================================

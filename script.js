@@ -1514,35 +1514,68 @@ function renderEditorList(){
   $('qCount').textContent=ar(ALL_Q.length);
 }
 function deleteQ(i){if(ALL_Q.length<=1)return showModal('⚠️','','لازم يكون فيه على الأقل سؤال واحد!');ALL_Q.splice(i,1);saveQuestions();renderEditorList()}
-function editQ(i){editingIndex=i;const q=ALL_Q[i];$('newQ').value=q.q;const rows=document.querySelectorAll('#newAnswers .ea-row');rows.forEach((row,j)=>{row.querySelector('.ea-ans').value=q.a[j]?q.a[j].t:'';row.querySelector('.ea-pts').value=q.a[j]?q.a[j].p:''});$('addQBtn').innerHTML=iconSVG('save')+' حفظ التعديل';$('newQ').scrollIntoView({behavior:'smooth'})}
-function addOrUpdateQ(){const q=$('newQ').value.trim();if(!q)return showModal('⚠️','','اكتب السؤال!');const rows=document.querySelectorAll('#newAnswers .ea-row');const answers=[];rows.forEach(row=>{const t=row.querySelector('.ea-ans').value.trim();const p=parseInt(row.querySelector('.ea-pts').value);if(t&&p>0)answers.push({t,p})});if(answers.length<2)return showModal('⚠️','','أضف على الأقل إجابتين مع النقاط!');if(editingIndex>=0){ALL_Q[editingIndex]={id:ALL_Q[editingIndex].id,q,a:answers};editingIndex=-1;$('addQBtn').innerHTML=iconSVG('plus')+' أضف السؤال'}else{ALL_Q.push({id:nextQId++,q,a:answers})}$('newQ').value='';document.querySelectorAll('#newAnswers input').forEach(i=>i.value='');saveQuestions();renderEditorList()}
+function editQ(i){editingIndex=i;const q=ALL_Q[i];$('newQ').value=q.q;const rows=document.querySelectorAll('#newAnswers .ea-row');rows.forEach((row,j)=>{row.querySelector('.ea-ans').value=q.a[j]?q.a[j].t:'';row.querySelector('.ea-pts').value=q.a[j]?q.a[j].p:''});$('addQBtn').innerHTML=iconSVG('save')+' حفظ التعديل';updateEaTotal();$('newQ').scrollIntoView({behavior:'smooth'})}
+function addOrUpdateQ(){const q=$('newQ').value.trim();if(!q)return showModal('⚠️','','اكتب السؤال!');const rows=document.querySelectorAll('#newAnswers .ea-row');const answers=[];rows.forEach(row=>{const t=row.querySelector('.ea-ans').value.trim();const p=parseInt(row.querySelector('.ea-pts').value);if(t&&p>0)answers.push({t,p})});if(answers.length<2)return showModal('⚠️','','أضف على الأقل إجابتين مع النقاط!');if(editingIndex>=0){ALL_Q[editingIndex]={id:ALL_Q[editingIndex].id,q,a:answers};editingIndex=-1;$('addQBtn').innerHTML=iconSVG('plus')+' أضف السؤال'}else{ALL_Q.push({id:nextQId++,q,a:answers})}$('newQ').value='';document.querySelectorAll('#newAnswers input').forEach(i=>i.value='');updateEaTotal();saveQuestions();renderEditorList()}
+
+// عدّاد مجموع النقاط في نموذج الإضافة. البنك كله مبني على أن السؤال الواحد
+// ١٠٠ نقطة، وبدون عدّاد يكتشف المقدّم اختلال التوزيع وهو يلعب لا وهو يكتب.
+function updateEaTotal(){
+  const box = $('eaTotal'); if(!box) return;
+  const sum = [...document.querySelectorAll('#newAnswers .ea-pts')]
+    .reduce((s, i) => s + (parseInt(i.value) || 0), 0);
+  $('eaTotalNum').textContent = ar(sum);
+  $('eaTotalMark').textContent = sum === 100 ? ' ✓' : '';
+  box.dataset.state = sum === 0 ? 'empty' : (sum === 100 ? 'ok' : 'off');
+}
+// تفويض على الحاوية لا على كل حقل: الصفوف ستة وثابتة، والتفويض يبقى صحيحاً
+// لو زاد عددها لاحقاً.
+if ($('newAnswers')) $('newAnswers').addEventListener('input', updateEaTotal);
 
 // ========= DOWNLOAD QUESTIONS PDF =========
+// ورقة مرجع للمقدّم: يطبعها ويقرأ منها، فالأولوية للوضوح على الورق — ألوان
+// الهوية، وبطاقة لا تنقسم بين صفحتين، ومجموع نقاط كل سؤال ظاهر للمراجعة.
 function downloadQuestionsPDF(){
-  const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>خمّن صح — الأسئلة</title>
+  const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const list = [...ALL_Q].sort((a,b)=>(a.id||0)-(b.id||0));
+  const today = new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
+  const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>خمّن صح — بنك الأسئلة</title>
 <style>
-@page{size:A4;margin:20mm 15mm}
+@page{size:A4;margin:14mm 12mm}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Tahoma,'Segoe UI',sans-serif;background:#fff;color:#222;padding:10mm;direction:rtl}
-h1{text-align:center;font-size:28px;margin-bottom:4px;color:#8b5e3c}
-.sub{text-align:center;font-size:13px;color:#999;margin-bottom:20px;border-bottom:2px solid #f0a830;padding-bottom:12px}
-.q-card{page-break-inside:avoid;margin-bottom:16px;border:2px solid #e8d5b8;border-radius:12px;overflow:hidden}
-.q-head{background:#fdf3e3;padding:10px 16px;font-size:15px;font-weight:700;color:#5c3a1a;display:flex;align-items:center;gap:10px}
-.q-num{min-width:32px;height:26px;border-radius:13px;background:#f0a830;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;padding:0 8px}
-.a-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
-.a-item{padding:8px 14px;border-top:1px solid #f0e6d2;display:flex;align-items:center;justify-content:space-between;font-size:13px}
-.a-item:nth-child(odd){border-left:1px solid #f0e6d2}
-.a-num{width:22px;height:22px;border-radius:6px;background:#f9e4c8;color:#8b5e3c;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:8px;flex-shrink:0}
+body{font-family:Tahoma,'Segoe UI',sans-serif;background:#fff;color:#3a2a1a;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.head{display:flex;align-items:center;gap:14px;border-bottom:3px solid #eab543;padding-bottom:12px;margin-bottom:6px}
+.seal{width:46px;height:46px;flex-shrink:0}
+.brand{font-size:26px;font-weight:700;color:#7a3f1c;line-height:1.2}
+.tag{font-size:12px;color:#8a7256;margin-top:2px}
+.meta{margin-right:auto;text-align:left;font-size:11px;color:#8a7256;line-height:1.7}
+.meta b{color:#7a3f1c;font-size:13px}
+.note{font-size:11px;color:#8a7256;margin:10px 0 14px;padding-right:2px}
+.q-card{page-break-inside:avoid;break-inside:avoid;margin-bottom:10px;border:1.5px solid #e0d3b8;border-radius:10px;overflow:hidden}
+.q-head{background:#f6ecd9;padding:8px 12px;display:flex;align-items:center;gap:10px}
+.q-num{min-width:30px;height:24px;border-radius:12px;background:#7a3f1c;color:#fbf3e6;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;padding:0 8px}
+.q-text{font-size:14px;font-weight:700;color:#3a2a1a;flex:1}
+.q-sum{font-size:10px;color:#8a7256;flex-shrink:0;white-space:nowrap}
+.a-grid{display:grid;grid-template-columns:1fr 1fr}
+.a-item{padding:6px 12px;border-top:1px solid #efe4cd;display:flex;align-items:center;gap:8px;font-size:12.5px}
+.a-item:nth-child(odd){border-left:1px solid #efe4cd}
+.a-num{width:19px;height:19px;border-radius:5px;background:#f2e3c4;color:#7a3f1c;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
 .a-text{flex:1}
-.a-pts{background:#f0a830;color:#fff;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;margin-right:8px}
-.footer{text-align:center;margin-top:20px;font-size:11px;color:#bbb;border-top:1px solid #eee;padding-top:10px}
-.total{text-align:center;font-size:13px;color:#8b5e3c;margin-bottom:16px}
+.a-pts{background:#eab543;color:#5c2f14;border-radius:5px;padding:1px 7px;font-size:10.5px;font-weight:700;flex-shrink:0}
+.foot{margin-top:14px;border-top:1px solid #e0d3b8;padding-top:8px;text-align:center;font-size:10.5px;color:#a89478}
 </style></head><body>
-<h1>🎮 خمّن صح</h1>
-<div class="sub">فاميلي فيود — جميع الأسئلة والإجابات</div>
-<div class="total">إجمالي الأسئلة: ${ALL_Q.length}</div>
-${[...ALL_Q].sort((a,b)=>(a.id||0)-(b.id||0)).map((q,i)=>`<div class="q-card"><div class="q-head"><span class="q-num">#${q.id||i+1}</span>${q.q}</div><div class="a-grid">${q.a.map((a,j)=>`<div class="a-item"><span class="a-num">${j+1}</span><span class="a-text">${a.t}</span><span class="a-pts">${a.p}</span></div>`).join('')}</div></div>`).join('')}
-<div class="footer">خمّن صح — فاميلي فيود 🎮</div>
+<div class="head">
+  <svg class="seal" viewBox="0 0 240 240"><circle cx="120" cy="120" r="118" fill="#eab543"/><circle cx="120" cy="120" r="113" fill="#7a3f1c"/><circle cx="120" cy="120" r="101" fill="#eab543"/><circle cx="120" cy="120" r="96" fill="#7a3f1c"/><polyline points="78,122 105,149 162,88" fill="none" stroke="#eab543" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div><div class="brand">خمّن صح</div><div class="tag">بنك الأسئلة — ورقة المقدّم</div></div>
+  <div class="meta"><b>${ar(list.length)}</b> سؤال<br>${today}</div>
+</div>
+<div class="note">الرقم جنب كل إجابة ترتيبها على اللوحة، والرقم الذهبي نقاطها.</div>
+${list.map((q,i)=>{
+  const sum = q.a.reduce((s,a)=>s+(a.p||0),0);
+  return `<div class="q-card"><div class="q-head"><span class="q-num">${ar(q.id||i+1)}</span><span class="q-text">${esc(q.q)}</span><span class="q-sum">${ar(sum)} نقطة</span></div><div class="a-grid">${
+    q.a.map((a,j)=>`<div class="a-item"><span class="a-num">${ar(j+1)}</span><span class="a-text">${esc(a.t)}</span><span class="a-pts">${ar(a.p)}</span></div>`).join('')
+  }</div></div>`;
+}).join('')}
+<div class="foot">خمّن صح — khamensah.com</div>
 <script>window.onload=()=>{window.print()}<\/script></body></html>`;
 
   const w = window.open('','_blank');
