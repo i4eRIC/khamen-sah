@@ -1531,11 +1531,18 @@ function updateEaTotal(){
 // لو زاد عددها لاحقاً.
 if ($('newAnswers')) $('newAnswers').addEventListener('input', updateEaTotal);
 
-// ========= DOWNLOAD QUESTIONS PDF =========
+// ========= QUESTIONS SHEET: PRINT / BROWSE =========
 // ورقة مرجع للمقدّم: يطبعها ويقرأ منها، فالأولوية للوضوح على الورق — ألوان
 // الهوية، وبطاقة لا تنقسم بين صفحتين، ومجموع نقاط كل سؤال ظاهر للمراجعة.
-function downloadQuestionsPDF(){
+// نفس الورقة تُفتح بوضعين: print يطبع فوراً، وbrowse يضيف شريط بحث حيّ يختفي
+// عند الطباعة — فالورقة واحدة ولا يتفرّع تصميمها.
+function downloadQuestionsPDF(){ openQuestionsSheet('print') }
+function browseQuestionsSheet(){ openQuestionsSheet('browse') }
+
+function openQuestionsSheet(mode){
+  const browse = mode === 'browse';
   const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const escA = s => esc(s).replace(/"/g, '&quot;');
   const list = [...ALL_Q].sort((a,b)=>(a.id||0)-(b.id||0));
   const today = new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
   const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>خمّن صح — بنك الأسئلة</title>
@@ -1562,6 +1569,16 @@ body{font-family:Tahoma,'Segoe UI',sans-serif;background:#fff;color:#3a2a1a;dire
 .a-text{flex:1}
 .a-pts{background:#eab543;color:#5c2f14;border-radius:5px;padding:1px 7px;font-size:10.5px;font-weight:700;flex-shrink:0}
 .foot{margin-top:14px;border-top:1px solid #e0d3b8;padding-top:8px;text-align:center;font-size:10.5px;color:#a89478}
+[hidden]{display:none!important}
+@media screen{body{max-width:880px;margin:0 auto;padding:16px}}
+.bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;background:#fbf3e6;border:1.5px solid #e0d3b8;border-radius:10px;padding:8px 10px;margin-bottom:12px}
+.bar input{flex:1;min-width:0;font:inherit;font-size:14px;border:1px solid #e0d3b8;border-radius:8px;padding:8px 11px;background:#fff;color:#3a2a1a}
+.bar input:focus{outline:none;border-color:#eab543}
+.bar .clr{flex-shrink:0;width:29px;height:29px;border:none;border-radius:8px;background:#f2e3c4;color:#7a3f1c;font-size:13px;cursor:pointer}
+.bar .cnt{flex-shrink:0;font-size:11.5px;color:#8a7256;white-space:nowrap}
+.bar .prn{flex-shrink:0;border:none;border-radius:8px;background:#7a3f1c;color:#fbf3e6;padding:8px 15px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.empty{text-align:center;color:#8a7256;font-size:13.5px;padding:34px 0}
+@media print{.bar,.empty{display:none}}
 </style></head><body>
 <div class="head">
   <svg class="seal" viewBox="0 0 240 240"><circle cx="120" cy="120" r="118" fill="#eab543"/><circle cx="120" cy="120" r="113" fill="#7a3f1c"/><circle cx="120" cy="120" r="101" fill="#eab543"/><circle cx="120" cy="120" r="96" fill="#7a3f1c"/><polyline points="78,122 105,149 162,88" fill="none" stroke="#eab543" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1569,18 +1586,62 @@ body{font-family:Tahoma,'Segoe UI',sans-serif;background:#fff;color:#3a2a1a;dire
   <div class="meta"><b>${ar(list.length)}</b> سؤال<br>${today}</div>
 </div>
 <div class="note">الرقم جنب كل إجابة ترتيبها على اللوحة، والرقم الذهبي نقاطها.</div>
+${browse ? `<div class="bar">
+  <input id="sq" type="text" placeholder="اكتب رقم السؤال أو كلمة فيه…" autocomplete="off">
+  <button class="clr" id="sclr" hidden>✕</button>
+  <span class="cnt" id="scnt"></span>
+  <button class="prn" onclick="window.print()">اطبع</button>
+</div>` : ''}
 ${list.map((q,i)=>{
   const sum = q.a.reduce((s,a)=>s+(a.p||0),0);
-  return `<div class="q-card"><div class="q-head"><span class="q-num">${ar(q.id||i+1)}</span><span class="q-text">${esc(q.q)}</span><span class="q-sum">${ar(sum)} نقطة</span></div><div class="a-grid">${
+  const id = q.id || i+1;
+  const key = browse ? ` data-id="${id}" data-k="${escA(q.q + ' ' + q.a.map(a=>a.t).join(' '))}"` : '';
+  return `<div class="q-card"${key}><div class="q-head"><span class="q-num">${ar(id)}</span><span class="q-text">${esc(q.q)}</span><span class="q-sum">${ar(sum)} نقطة</span></div><div class="a-grid">${
     q.a.map((a,j)=>`<div class="a-item"><span class="a-num">${ar(j+1)}</span><span class="a-text">${esc(a.t)}</span><span class="a-pts">${ar(a.p)}</span></div>`).join('')
   }</div></div>`;
 }).join('')}
+${browse ? '<div class="empty" id="sempty" hidden>ما فيه نتائج مطابقة للبحث</div>' : ''}
 <div class="foot">خمّن صح — khamensah.com</div>
-<script>window.onload=()=>{window.print()}<\/script></body></html>`;
+${browse ? `<script>
+(function(){
+var AR = '٠١٢٣٤٥٦٧٨٩';
+function arn(v){ return String(v).replace(/[0-9]/g, function(d){ return AR[+d] }) }
+// بحث متسامح: الأرقام العربية تُقرأ كالإنجليزية، والتشكيل والهمزات والتاء
+// المربوطة ما تمنع المطابقة — فاللاعب يكتب كما يكتب عادة ويلقى سؤاله.
+function norm(s){ return String(s).toLowerCase()
+  .replace(/[\\u0660-\\u0669]/g, function(d){ return d.charCodeAt(0) - 1632 })
+  .replace(/[\\u06f0-\\u06f9]/g, function(d){ return d.charCodeAt(0) - 1776 })
+  .replace(/[\\u064b-\\u0652\\u0640]/g, '')
+  .replace(/[\\u0623\\u0625\\u0622]/g, '\\u0627')
+  .replace(/\\u0649/g, '\\u064a')
+  .replace(/\\u0629/g, '\\u0647')
+  .replace(/\\s+/g, ' ').trim() }
+var cards = [].map.call(document.querySelectorAll('.q-card'), function(el){
+  return { el: el, id: el.getAttribute('data-id'), k: norm(el.getAttribute('data-k')) } });
+var inp = document.getElementById('sq'), cnt = document.getElementById('scnt'),
+    clr = document.getElementById('sclr'), empty = document.getElementById('sempty');
+function label(n){
+  if(n === 1) return 'نتيجة واحدة';
+  if(n === 2) return 'نتيجتان';
+  return arn(n) + (n < 11 ? ' نتائج' : ' نتيجة') }
+function run(){
+  var t = norm(inp.value), isNum = /^[0-9]+\$/.test(t), n = 0;
+  cards.forEach(function(c){
+    // رقم خالص يطابق رقم السؤال فقط، وإلا طابقنا نقاط الإجابات بالغلط.
+    var hit = !t || (isNum ? c.id.indexOf(t) === 0 : c.k.indexOf(t) !== -1);
+    c.el.hidden = !hit; if(hit) n++ });
+  clr.hidden = !t;
+  cnt.textContent = t ? (n ? label(n) : 'ما فيه نتائج') : arn(cards.length) + ' سؤال';
+  empty.hidden = !(t && !n) }
+inp.addEventListener('input', run);
+clr.addEventListener('click', function(){ inp.value = ''; run(); inp.focus() });
+run(); inp.focus();
+})();
+<\/script>` : '<script>window.onload=()=>{window.print()}<\/script>'}</body></html>`;
 
   const w = window.open('','_blank');
   if(w){w.document.write(html);w.document.close()}
-  else{showModal('⚠️','','فعّل النوافذ المنبثقة عشان تقدر تحمّل الـ PDF')}
+  else{showModal('⚠️','', browse ? 'فعّل النوافذ المنبثقة عشان تقدر تفتح ورقة الأسئلة' : 'فعّل النوافذ المنبثقة عشان تقدر تحمّل الـ PDF')}
 }
 
 // ========= INIT GAME =========
